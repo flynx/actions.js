@@ -1,0 +1,25 @@
+{
+  "name": "features",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flynx/features.git"
+  },
+  "keywords": [
+    "js",
+    "javascript",
+    "oop",
+    "meta-programming",
+    "tools"
+  ],
+  "author": "Alex A. Naanou <alex.nanou@gmail.com> (https://github.com/flynx)",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/flynx/features/issues"
+  },
+  "homepage": "https://github.com/flynx/features#readme"
+}
