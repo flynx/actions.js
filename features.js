@@ -7,10 +7,14 @@
 function(require){ var module={} // makes module AMD/node compatible...
 /*********************************************************************/
 
-var args2array = require('lib/util').args2array
+var object = require('ig-object')
+var actions = require('actions')
 
-var actions = require('lib/actions')
-var object = require('lib/object')
+
+
+/*********************************************************************/
+
+var args2array = function(a){ return [].slice.call(a) } 
 
 
 
