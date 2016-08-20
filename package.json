@@ -2,12 +2,12 @@
   "name": "features",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "features.js",
   "scripts": {
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flynx/features.git"
+    "url": "git+https://github.com/flynx/features.js.git"
   },
   "keywords": [
     "js",
