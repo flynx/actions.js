@@ -967,6 +967,8 @@ module.MetaActions = {
 	// NOTE: if 'all' is set then mixin all the actions available, 
 	// 		otherwise only mixin local actions...
 	// NOTE: this will override existing own attributes.
+	//
+	// XXX should we include functions by default????
 	inlineMixin: function(from, all, descriptors, all_attr_types){
 		// defaults...
 		descriptors = descriptors || true
@@ -1003,7 +1005,9 @@ module.MetaActions = {
 			// actions and other attributes...
 			} else {
 				var attr = from[k]
-				if(all_attr_types || attr instanceof Action){
+				if(all_attr_types 
+						//|| attr instanceof Function
+						|| attr instanceof Action){
 					that[k] = attr
 				}
 			}

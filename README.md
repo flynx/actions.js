@@ -114,6 +114,7 @@ Now:
 - **Thread the return value down the call chain**  
   The return value will get passed through all the actions in a chain 
   before returning to the action caller.
+- **Return `this` by default**
 - **Organise and apply actions to objects**
 - **Unified way to document actions**
 - **Introspection and inspection API**
@@ -135,8 +136,11 @@ Now:
 - **Single return point**  
   Only the _root_ action can return a value, any other returns by 
   _extending_ actions are ignored
-- **Return `this` by default**
-
+- **No state transferred via mixin**  
+  The only two things _inherited_ from the object defining the actions 
+  via the mixin methods or `mix` function are properties and actions, 
+  all data, including normal methods is discarded.  
+  _(this is not final)_
 
 
 
@@ -155,6 +159,35 @@ Now:
 
 **Action**
 
+A full example:
+```javascript
+  // ...
+
+  minimal: [function(){
+    // ...
+  }],
+
+  full: ['Short info string',
+    'Long documentation string, describing the action',
+    function(){
+      // pre code
+      //    run before the parent action...
+
+      return function(res){
+        // post code
+        //     run after the parent action or directly after 
+        //     the pre-code of this is the root action...
+      }
+    }],
+
+  // ...
+```
+
+Both documentation strings and the return callback are optional.
+
+
+
+The call diagram:
 ```
                         +  pre  +  pre  +       +  post +  post +
 Action event handler:   o-------x                       o-------x
