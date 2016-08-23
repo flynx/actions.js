@@ -8,7 +8,7 @@ function(require){ var module={} // makes module AMD/node compatible...
 /*********************************************************************/
 
 var object = require('ig-object')
-var actions = require('./actions')
+var actions = module.actions = require('./actions')
 
 
 
