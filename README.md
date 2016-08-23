@@ -14,13 +14,12 @@ By design this tool-set promotes a _cooperative_ model and makes it
 hard to change/modify existing signatures / _contracts_ in _extending_ 
 code.
 
-### The problem:
+#### The problem:
 
 ```javascript
 var N = {
   times: function(n){
     this.value *= n
-
     return this
   }
 }
@@ -59,7 +58,7 @@ not reusable, i.e.:
 - we can't use the extending method stand-alone, for example for testing
 
 
-Here is the proposed approach:
+#### The solution:
 
 ```javascript
 var N = Actions({
@@ -149,46 +148,8 @@ But now:
 
 ### The main entities:
 
-```javascript
-// Action set...
-var Base = Actions({
-  get value(){
-    return this.__value || 0
-  },
-  set value(val){
-    this.__value = val
-  },
-
-  print: [function(){
-    console.log(this.value)
-  }],
-
-  times: ['value times n',
-    function(n){
-      this.value *= n
-
-      return this.value
-    }],
-})
-
-
-var Extending = Actions(Base, {
-  // Extend the .times(..) action...
-  times: [function(n){
-    console.log(this.value, 'times', n, 'is:')
-
-    return function(result, n){
-      console.log('  ', this.value)
-    }
-  }]
-})
-
-
-```
 
 **Action set**
-
-
 
 - an object containing a number of actions,
 - optionally, directly or indirectly inherited from `MetaActions`
@@ -247,6 +208,12 @@ Root Action                             o---|---x
 
 
 ### The action system main protocols:
+
+By default `Actions(..)` defines no additional methods. Most of the API
+methods are defined in `MetaActions` and can be optionally inherited 
+from an instance of `ActionSet`. In general this includes all
+`ActionSet / object` level methods while anything accessible from the 
+_action_ is build-in.
 
 1. Documentation generation and introspection (`MetaActions`)
 
