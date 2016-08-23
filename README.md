@@ -12,15 +12,12 @@ The Feature / Action couple is meta-programming library that helps with:
 Actions are an extension to the JavaScript object model tailored for
 a set of specific tasks.
 
-
-#### Goals:
-- Provide a unified mechanism to define and manage user API's for 
-  use in UI-hooks, keyboard mappings, scripting, ... etc.
-- A means to generate configuration UI's
-- A means to generate documentation
+By design this tool-set promotes a _cooperative_ model and makes it
+hard to change/modify existing signatures / _contracts_ in _extending_ 
+code.
 
 
-#### Functionality:
+### Functionality:
 - **Call _extended_ actions automatically**  
   All actions (methods) in a chain are guaranteed to get called if the 
   action is called.
@@ -30,11 +27,12 @@ a set of specific tasks.
 - **Thread the return value down the call chain**  
   The return value will get passed through all the actions in a chain 
   before returning to the action caller.
+- **Organise and apply actions to objects**
 - **Unified way to document actions**
 - **Introspection and inspection API**
 
 
-#### Restrictions:
+### Restrictions comparing to native JavaScript:
 - **No method shadowing**  
   The _extending_ action can not "shadow" the _extended_ action in a 
   non destructive manner (e.g. via a `throw`), all actions in a chain are 
@@ -52,9 +50,6 @@ a set of specific tasks.
   _extending_ actions are ignored
 - **Return `this` by default**
 
-By design this tool-set promotes a _cooperative_ design and makes it
-hard to change/modify existing signatures / _contracts_ in _extending_ 
-code.
 
 
 
@@ -127,7 +122,7 @@ Root Action                             o---|---x
   <action-set>.getDoc(<action-name>[, ..])
       -> dict of action-name, doc
 
-  <action-set>.a.getHandlerDocStr(<action-name>)
+  <action-set>.getHandlerDocStr(<action-name>)
       -> formated string of action handlers
 
   <action-set>.actions
