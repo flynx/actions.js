@@ -117,16 +117,18 @@ Root Action                             o---|---x
 - a method, created by `Action(..)`,
 - calls all the shadowed/overloaded actions in the inheritance 
   chain in sequence implicitly,
-  NOTE: there is no way to prevent an action in the chain from
-		running, this is by design, i.e. no way to fully shadow.
+  **Notes:**   
+    - there is no way to prevent an action in the chain from
+		  running, this is by design, i.e. no way to fully shadow.
 - actions that do not shadow anything are called root actions.
 - returns the action set by default (for call chaining),
 - the base/root action can return any value.
-  NOTE: if undefined is returned, it will be replaced by the 
-		action context/action set.
-  NOTE: there is no distinction between root and other actions
-		other than that root action's return values are not 
-		ignored.
+  **Notes:**  
+    - if undefined is returned, it will be replaced by the 
+		  action context/action set.
+    - there is no distinction between root and other actions
+		  other than that root action's return values are not 
+		  ignored.
 - can consist of two parts: the first is called before the 
   shadowed action (pre-callback) and the second after (post-callback).
 - post-callback has access to the return value and can modify it
@@ -187,7 +189,7 @@ Root Action                             o---|---x
 	This replaces / complements the standard JavaScript overloading 
 	mechanisms (`Action`, `Actions`)
 
-  ```
+  ```javascript
   // Actions...
   var X = Actions({
     m: [function(){ console.log('m') }]
