@@ -29,7 +29,9 @@ var n = Object.create(N)
 
 n.value = 3
 
-n.times(3)
+n
+  .times(3)
+  .times(2)
 
 ```
 
@@ -69,10 +71,10 @@ var N = Actions({
 
 ```
 
-Now to extend:
+Now the extended:
 
 ```javascript
-var ExtendedN = Actions(N, {
+var ExtendedN = Actions({
   times: [function(n){
     console.log(this.value, 'times', n)
 
@@ -88,12 +90,21 @@ And both objects can be used in the same way as before:
 
 
 ```javascript
-var n = Object.create(ExtendedN)
+// We mix the two, but either can be used as above...
+var n = mix(N, ExtendedN) 
 
 n.value = 3
 
-n.times(3)
+n
+  .times(3)
+  .times(2)
 ```
+
+But now:
+- `this` is returned automatically
+- the _super_ method is called automatically
+- both `N` and `ExtendedN` are reusable in different inheritance chains
+  without any extra work needed.
 
 
 

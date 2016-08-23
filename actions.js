@@ -964,7 +964,7 @@ module.MetaActions = {
 	
 	// Mixin a set of actions into this...
 	//
-	// NOTE: if 'all' is set them mixin all the actions available, 
+	// NOTE: if 'all' is set then mixin all the actions available, 
 	// 		otherwise only mixin local actions...
 	// NOTE: this will override existing own attributes.
 	inlineMixin: function(from, all, descriptors, all_attr_types){
@@ -1299,6 +1299,25 @@ function Actions(a, b){
 	}
 
 	return obj
+}
+
+
+
+/*********************************************************************/
+
+var mix =
+module.mix = 
+function(){
+	var args = [].slice.call(arguments)
+	var res = {}
+
+	var mixin = MetaActions.inlineMixin
+
+	args.forEach(function(p){
+		res = Object.create(mixin.call(res, p))
+	})
+
+	return res
 }
 
 
