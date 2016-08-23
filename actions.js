@@ -967,7 +967,7 @@ module.MetaActions = {
 	// NOTE: if 'all' is set them mixin all the actions available, 
 	// 		otherwise only mixin local actions...
 	// NOTE: this will override existing own attributes.
-	inlineMmixin: function(from, all, descriptors, all_attr_types){
+	inlineMixin: function(from, all, descriptors, all_attr_types){
 		// defaults...
 		descriptors = descriptors || true
 		all_attr_types = all_attr_types || false
@@ -1012,14 +1012,14 @@ module.MetaActions = {
 		return this
 	},
 
-	// Same as .inlineMmixin(..) but isolates a mixin in a seporate object
+	// Same as .inlineMixin(..) but isolates a mixin in a seporate object
 	// in the inheritance chain...
 	//
 	mixin: function(from, all, descriptors, all_attr_types){
 		var proto = Object.create(this.__proto__)
 
 		// mixinto an empty object
-		proto.inlineMmixin(from, all, descriptors, all_attr_types)
+		proto.inlineMixin(from, all, descriptors, all_attr_types)
 
 		// mark the mixin for simpler removal...
 		proto.__mixin_source = from
@@ -1273,9 +1273,13 @@ function Actions(a, b){
 
 		// skip non-arrays...
 		if(arg == null 
-				|| arg.constructor !== Array 
+				// XXX node?: for some magical reason when running this 
+				// 		from node console instanceof tests fail...
+				//|| !(arg instanceof Array)
+				|| arg.constructor.name != 'Array'
 				// and arrays the last element of which is not a function...
-				|| !(arg[arg.length-1] instanceof Function)){
+				|| typeof(arg[arg.length-1]) != 'function'){
+				//|| !(arg[arg.length-1] instanceof Function)){
 			return
 		}
 

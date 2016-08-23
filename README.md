@@ -5,8 +5,6 @@ The Feature / Action couple is meta-programming library that helps with:
 - managing and applying sets of methods (Features) to objects (a-la _mixin_)
 
 
-
-
 ## Actions
 
 Actions are an extension to the JavaScript object model tailored for
@@ -15,6 +13,32 @@ a set of specific tasks.
 By design this tool-set promotes a _cooperative_ model and makes it
 hard to change/modify existing signatures / _contracts_ in _extending_ 
 code.
+
+### The problem:
+
+```javascript
+var N = {
+  get value(){
+    return this.__value || 0
+  },
+  set value(val){
+    this.__value = val
+  }
+
+  times: function(n){
+    this.value *= n
+  }
+}
+
+var n = Object.create(N)
+
+```
+
+To extend this object we'll need to:
+
+
+
+
 
 
 ### Functionality:
@@ -52,6 +76,8 @@ code.
 
 
 
+
+---
 
 ### The main entities:
 
