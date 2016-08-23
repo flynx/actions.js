@@ -49,7 +49,7 @@ n.times = function(n){
 ```
 
 Note that we are manually calling the _super_ method and manually 
-returning and re-returning `this` in each implementation.
+returning and re-returning `this` in each implementation of `.times(..)`.
 
 Another thing to note here is that the code above, though quite simple is
 not reusable, i.e.:
@@ -67,12 +67,7 @@ var N = Actions({
   }]
 })
 
-
-```
-
-Now the extended:
-
-```javascript
+// Now we extend .times(..)
 var ExtendedN = Actions({
   times: [function(n){
     console.log(this.value, 'times', n)
@@ -89,7 +84,7 @@ And both objects can be used in the same way as before:
 
 
 ```javascript
-// We mix the two, but either can be used as above...
+// Here we mix the two, but either can be used stand-alone as above...
 var n = mix(N, ExtendedN) 
 
 n.value = 3
@@ -99,16 +94,17 @@ n
   .times(2)
 ```
 
-But now:
-- `this` is returned automatically
-- the _super_ method is called automatically
-- both `N` and `ExtendedN` are reusable in different inheritance chains
-  without any extra work needed.
+Now:
+- `this` is returned automatically enabling us to chain calls to `.times(..)`
+- the _super_ method is resolved and called automatically
+- both `N` and `ExtendedN` are independent of each other and reusable 
+  in different inheritance chains without any extra work needed.
+- _and more... (see below)_
 
 
 
 
-### Functionality:
+### What we get:
 - **Call _extended_ actions automatically**  
   All actions (methods) in a chain are guaranteed to get called if the 
   action is called.
