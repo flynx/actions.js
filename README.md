@@ -69,7 +69,7 @@ var Base = Actions({
     console.log(this.value)
   }],
 
-  times: ['get value',
+  times: ['value times n',
     function(n){
       this.value *= n
 
@@ -79,6 +79,7 @@ var Base = Actions({
 
 
 var Extending = Actions(Base, {
+  // Extend the .times(..) action...
   times: [function(n){
     console.log(this.value, 'times', n, 'is:')
 
