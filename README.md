@@ -20,6 +20,20 @@ a set of specific tasks.
 - A means to generate documentation
 
 
+#### Functionality:
+- **Call _extended_ actions automatically**  
+  All actions (methods) in a chain are guaranteed to get called if the 
+  action is called.
+- **Thread arguments up the call chain**  
+  All actions in a chain will get the set of arguments passed to the 
+  action when called.
+- **Thread the return value down the call chain**  
+  The return value will get passed through all the actions in a chain 
+  before returning to the action caller.
+- **Unified way to document actions**
+- **Introspection and inspection API**
+
+
 #### Restrictions:
 - **No method shadowing**  
   The _extending_ action can not "shadow" the _extended_ action in a 
@@ -33,10 +47,10 @@ a set of specific tasks.
   The _extending_ action can not replace the object returned by the 
   _extended_ action, though it can _cooperatively_ update/modify it if 
   needed
-- **Single return point**
+- **Single return point**  
   Only the _root_ action can return a value, any other returns by 
   _extending_ actions are ignored
-- The default return value is `this`
+- **Return `this` by default**
 
 By design this tool-set promotes a _cooperative_ design and makes it
 hard to change/modify existing signatures / _contracts_ in _extending_ 
