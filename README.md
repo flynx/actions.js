@@ -18,25 +18,82 @@ code.
 
 ```javascript
 var N = {
-  get value(){
-    return this.__value || 0
-  },
-  set value(val){
-    this.__value = val
-  }
-
   times: function(n){
     this.value *= n
+
+    return this
   }
 }
 
 var n = Object.create(N)
 
+n.value = 3
+
+n.times(3)
+
 ```
 
 To extend this object we'll need to:
 
+```javascript
+n.times = function(n){
+  console.log(this.value, 'times', n)
 
+  var res = N.times.call(this, n)
+
+  console.log('    ->', this.value)
+  return res
+}
+
+```
+
+Note that we are manually calling the _super_ method and manually 
+returning and re-returning `this` in each implementation.
+
+Another thing to note here is that the code above, though quite simple is
+not reusable, i.e.:
+- we can't simply use the extending method for any other parent unless we
+  either copy/rewrite it or complicate the code.
+- we can't use the extending method stand-alone, for example for testing
+
+
+Here is the proposed approach:
+
+```javascript
+var N = Actions({
+  times: [function(n){
+    this.value *= n
+  }]
+})
+
+
+```
+
+Now to extend:
+
+```javascript
+var ExtendedN = Actions(N, {
+  times: [function(n){
+    console.log(this.value, 'times', n)
+
+    return function(){
+      console.log('    ->', this.value)
+    }
+  }]
+})
+
+```
+
+And both objects can be used in the same way as before:
+
+
+```javascript
+var n = Object.create(ExtendedN)
+
+n.value = 3
+
+n.times(3)
+```
 
 
 
