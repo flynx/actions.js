@@ -150,6 +150,21 @@ Now:
 
 
 **Action set**
+```javascript
+var empty_full = new ActionSet()
+
+var minimal = Actions({
+  // action and prop definitions...
+})
+
+var full = Actions(ActionSet(), {
+  // ...
+})
+
+var inherited = Actions(full, {
+  // ...
+})
+```
 
 - an object containing a number of actions,
 - optionally, directly or indirectly inherited from `MetaActions`
@@ -222,6 +237,21 @@ Root Action                             o---|---x
 
 
 **Action (event) handler**
+```javascript
+action_set.on('action_name', function(){
+  // post code...
+})
+
+action_set.on('action_name.post', function(){
+  // post code...
+})
+
+
+action_set.on('action_name.pre', function(){
+  // pre code...
+})
+```
+
 - a function,
 - can be bound to run before and/or after the action itself,
 - is local to an action set it was bound via,
