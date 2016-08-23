@@ -116,13 +116,13 @@ Root Action                             o---|---x
 
 - a method, created by `Action(..)`,
 - calls all the shadowed/overloaded actions in the inheritance 
-  chain in sequence implicitly,
+  chain in sequence implicitly,  
   **Notes:**   
     - there is no way to prevent an action in the chain from
 		  running, this is by design, i.e. no way to fully shadow.
 - actions that do not shadow anything are called root actions.
 - returns the action set by default (for call chaining),
-- the base/root action can return any value.
+- the base/root action can return any value.  
   **Notes:**  
     - if undefined is returned, it will be replaced by the 
 		  action context/action set.
