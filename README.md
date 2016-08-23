@@ -1,16 +1,42 @@
 # Features / Actions
 
+The Feature / Action couple is meta-programming library that helps with:
+- extending and calling methods (Actions) on object inheritance chains
+- managing and applying sets of methods (Features) to objects (a-la _mixin_)
+
+
+
 
 ## Actions
 
 Actions are an extension to the JavaScript object model tailored for
 a set of specific tasks.
 
+
 ### Goals:
-- provide a unified mechanism to define and manage user API's for 
+- Provide a unified mechanism to define and manage user API's for 
   use in UI-hooks, keyboard mappings, scripting, ... etc.
-- a means to generate configuration UI's
-- a means to generate documentation
+- A means to generate configuration UI's
+- A means to generate documentation
+
+
+### Restrictions:
+- **No method shadowing**  
+  The _extending_ action can not "shadow" the _extended_ action in a 
+  non destructive manner (e.g. via a throw), all actions in a chain are 
+  guaranteed to be called, unless a fatal error condition.
+- **No argument shadowing**  
+  The _extending_ has access to all the arguments that the user passed
+  but can not modify or reformat them before the _extended_ action gets
+  them.
+- **No return shadowing**  
+  The _extending_ action can not replace the object returned by the 
+  _extended_ action, though it can _coopiratively_ update/modify it if 
+  needed
+- **Single return point**
+  Only the _root_ action can return a value, any other returns by 
+  _extending_ actions are ignored
+- The default return value is `this`
 
 
 ### The main entities:
@@ -237,7 +263,25 @@ Root Action                             o---|---x
 		an overhead on all the actions if not done carefully.
 
 
+
 ## Features
+
+Features is a module that helps build _features_ out of sets of actions
+and manage sets of features according to external criteria and 
+feature-feature dependencies.
+
+### Goals:
+
+XXX
+
+### The main entities:
+
+**Feature**
+
+XXX
+
+
+**FeatureSet (Features)**
 
 XXX
 
