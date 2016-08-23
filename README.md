@@ -174,7 +174,7 @@ var inherited = Actions(full, {
 
 **Action**
 
-A full example:
+Defined inside an action-set:
 ```javascript
   // ...
 
@@ -237,6 +237,9 @@ Root Action                             o---|---x
 
 
 **Action (event) handler**
+
+When `action_set` object is inherited from a `ActionSet` object or 
+from `MetaActions`:
 ```javascript
 action_set.on('action_name', function(){
   // post code...
