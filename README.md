@@ -17,9 +17,9 @@ a set of specific tasks.
 
 **Action set**
 - an object containing a number of actions,
-- optionally, directly or indirectly inherited from MetaActions
+- optionally, directly or indirectly inherited from `MetaActions`
   and/or other action sets,
-- the action handlers are bound relative to it (._action_handlers)
+- the action handlers are bound relative to it (`._action_handlers`)
 
 
 **Action**
@@ -34,7 +34,7 @@ Root Action                             o---|---x
 
 ```
 
-- a method, created by Action(..),
+- a method, created by `Action(..)`,
 - calls all the shadowed/overloaded actions in the inheritance 
   chain in sequence implicitly,
   NOTE: there is no way to prevent an action in the chain from
@@ -72,7 +72,7 @@ Root Action                             o---|---x
 
 ### The action system main protocols:
 
-1. Documentation generation and introspection (MetaActions)
+1. Documentation generation and introspection (`MetaActions`)
 
   ```
   <action>.toString()
@@ -93,7 +93,7 @@ Root Action                             o---|---x
   ```
 
 
-2. Event-like callbacks for actions (MetaActions, Action)
+2. Event-like callbacks for actions (`MetaActions`, `Action`)
 
   ```
   <action-set>.on('action', function(){ ... })
@@ -105,7 +105,7 @@ Root Action                             o---|---x
 
 3. A mechanism to define and extend already defined actions
 	This replaces / complements the standard JavaScript overloading 
-	mechanisms (Action, Actions)
+	mechanisms (`Action`, `Actions`)
 
   ```
   // Actions...
@@ -122,9 +122,10 @@ Root Action                             o---|---x
   })
   ```
 
-   NOTE: what is done here is similar to calling `O.__proto__.m.call(..)`
+  **Notes:**
+  - what is done here is similar to calling `O.__proto__.m.call(..)`
     but is implicit, and not dependant on the original containing 
-    object name/reference ('O'), thus enabling an action to be 
+    object name/reference (`O`), thus enabling an action to be 
     referenced and called from any object and still chain correctly.
 
 
@@ -151,7 +152,8 @@ Root Action                             o---|---x
 
   All action protocol details apply.
 
-  NOTE: there is not reliable way to call the post phase without first
+  **Notes:**
+  - there is not reliable way to call the post phase without first
     calling the pre phase due to how the pre phase is defined (i.e.
     pre phase functions can return post phase functions).
 
@@ -206,13 +208,14 @@ Root Action                             o---|---x
   2. implementation action (inner)
   3. post phase of protocol action (outer)
 
-  NOTE: this will not affect to protocol/signature of the outer action
+  **Notes:**
+  - this will not affect to protocol/signature of the outer action
     in any way.
-  NOTE: both the inner and outer actions will get passed the same 
+  - both the inner and outer actions will get passed the same 
     arguments.
-  NOTE: another use-case is testing/debugging actions.
-  NOTE: this is effectively the inside-out of normal action overloading.
-  NOTE: there is intentionally no shorthand for this feature, to avoid 
+  - another use-case is testing/debugging actions.
+  - this is effectively the inside-out of normal action overloading.
+  - there is intentionally no shorthand for this feature, to avoid 
     confusion and to discourage the use of this feature unless
     really necessary.
 
@@ -224,12 +227,13 @@ Root Action                             o---|---x
 	the action name as first argument and a list of action arguments as
 	the second arguments, and as normal a result on the post phase.
 
-	NOTE: it is not necessary to define the actual action, binding to a
+  **Notes:**
+	- it is not necessary to define the actual action, binding to a
 		handler will also work.
-	NOTE: one should not call actions directly from within a __call__ 
+	- one should not call actions directly from within a __call__ 
 		handler as that will result in infinite recursion.
 		XXX need a way to prevent this...
-	NOTE: one should use this with extreme care as this will introduce 
+	- one should use this with extreme care as this will introduce 
 		an overhead on all the actions if not done carefully.
 
 
