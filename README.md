@@ -55,7 +55,46 @@ code.
 
 ### The main entities:
 
+```javascript
+// Action set...
+var Base = Actions({
+  get value(){
+    return this.__value || 0
+  },
+  set value(val){
+    this.__value = val
+  },
+
+  print: [function(){
+    console.log(this.value)
+  }],
+
+  times: ['get value',
+    function(n){
+      this.value *= n
+
+      return this.value
+    }],
+})
+
+
+var Extending = Actions(Base, {
+  times: [function(n){
+    console.log(this.value, 'times', n, 'is:')
+
+    return function(result, n){
+      console.log('  ', this.value)
+    }
+  }]
+})
+
+
+```
+
 **Action set**
+
+
+
 - an object containing a number of actions,
 - optionally, directly or indirectly inherited from `MetaActions`
   and/or other action sets,
