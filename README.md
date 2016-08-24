@@ -88,8 +88,7 @@ And both objects can be used in the same way as before:
 
 
 ```javascript
-// Here we mix the two, but either can be used stand-alone as above...
-var n = mix(N, ExtendedN) 
+var n = mix(N, ExtendedN) // or Object.create(N) or Object.create(ExtendedN)...
 
 n.value = 3
 
@@ -132,13 +131,12 @@ n
   The _extending_ has access to all the arguments that the user passed
   but can not modify or reformat them before the _extended_ action gets
   them.
-- **No return shadowing**  
+- **No return shadowing / Single return point**  
   The _extending_ action can not replace the object returned by the 
   _extended_ action, though it can _cooperatively_ update/modify it if 
-  needed
-- **Single return point**  
-  Only the _root_ action can return a value, any other returns by 
-  _extending_ actions are ignored
+  needed.
+  Only the _root_ action can return a value, any other returns in chain
+  are ignored
 - **No state transferred via mixin**  
   The only two things _inherited_ from the object defining the actions 
   via the mixin methods or `mix` function are properties and actions, 
@@ -220,8 +218,8 @@ Root Action                             o---|---x
   **Notes:**   
     - there is no way to prevent an action in the chain from
 		  running, this is by design, i.e. no way to fully shadow.
-- actions that do not shadow anything are called root actions.
-- returns the action set by default (for call chaining),
+- actions that do not shadow anything are called _base_ or _root actions_.
+- returns the action set (`this`) by default (for call chaining),
 - the base/root action can return any value.  
   **Notes:**  
     - if undefined is returned, it will be replaced by the 
@@ -230,11 +228,11 @@ Root Action                             o---|---x
 		  other than that root action's return values are not 
 		  ignored.
 - can consist of two parts: the first is called before the 
-  shadowed action (pre-callback) and the second after (post-callback).
+  shadowed action (_pre-callback_) and the second after (_post-callback_).
 - post-callback has access to the return value and can modify it
   but not replace it.
 - can be bound to, a-la an event, calling the handlers when it is 
-  called, 
+  called (_see below_), 
 
 
 **Action (event) handler**
@@ -450,9 +448,6 @@ Features is a module that helps build _features_ out of sets of actions
 and manage sets of features according to external criteria and 
 feature-feature dependencies.
 
-### Goals:
-
-XXX
 
 ### The main entities:
 
