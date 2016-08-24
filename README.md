@@ -57,6 +57,10 @@ not reusable, i.e.:
   either copy/rewrite it or complicate the code.
 - we can't use the extending method stand-alone, for example for testing
 
+It is possible to go around these issues but not without introducing
+complicated and/or redundant code, _Actions_ implements one approach to
+abstract this...
+
 
 #### The solution:
 
@@ -94,7 +98,6 @@ n
   .times(2)
 ```
 
-Now:
 - `this` is returned automatically enabling us to chain calls to `.times(..)`
 - the _super_ method is resolved and called automatically
 - both `N` and `ExtendedN` are independent of each other and reusable 
@@ -143,8 +146,6 @@ Now:
   _(this is not final)_
 
 
-
----
 
 ### The main entities:
 
