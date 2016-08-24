@@ -117,7 +117,9 @@ n
   The return value will get passed through all the actions in a chain 
   before returning to the action caller.
 - **Return `this` by default**
-- **Organise and apply actions to objects**
+- **Organise reuse actions**
+  Actions organized into action sets can be reused (_mixed-in_) in multiple
+  inheritance chains without any extra work.
 - **Unified way to document actions**
 - **Introspection and inspection API**
 
