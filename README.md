@@ -184,7 +184,7 @@ Defined inside an action-set:
   }],
 
   full: ['Short info string',
-    'Long documentation string, describing the action',
+    'Long documentation string, describing the action (optional)',
     function(){
       // pre code
       //    run before the parent action...
@@ -198,9 +198,6 @@ Defined inside an action-set:
 
   // ...
 ```
-
-Both documentation strings and the return callback are optional.
-
 
 
 The call diagram:
