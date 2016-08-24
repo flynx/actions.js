@@ -117,7 +117,7 @@ n
   The return value will get passed through all the actions in a chain 
   before returning to the action caller.
 - **Return `this` by default**
-- **Organise reuse actions**  
+- **Organise and reuse actions**  
   Actions organized into action sets can be reused (_mixed-in_) in multiple
   inheritance chains without any extra work.
 - **Unified way to document actions**
@@ -373,7 +373,7 @@ _action_ is build-in.
 
   A trivial example:
 
-  ```
+  ```javascript
   actionSet.someAction.chainApply(actionsSet, 
     function(){
       // this gets run between someAction's pre and post 
@@ -387,7 +387,7 @@ _action_ is build-in.
   implementations (inner) within a single action set can be used as
   entry points.
 
-  ```
+  ```javascript
   // Protocol root action (outer) definition...
   protocolAction: [function(){}],
 
