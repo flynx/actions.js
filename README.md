@@ -10,9 +10,13 @@ The Feature / Action couple is meta-programming library that helps with:
 Actions are an extension to the JavaScript object model tailored for
 a set of specific tasks.
 
-By design this tool-set promotes a _cooperative_ model and makes it
-hard to change/modify existing signatures / _contracts_ in _extending_ 
-code.
+To distinguish this from the native JavaScript elements we introduce new
+terminology, an _action_ is an extended _method_ while an _action set_ is
+a _mixin object_ (stateless, including only functionality) both usable 
+stand-alone as well as _mixed_ into other objects.
+
+Here is a trivial use-case to illustrate the motivation for this tool set:
+
 
 #### The problem:
 
@@ -64,6 +68,7 @@ abstract this...
 
 #### The solution:
 
+
 ```javascript
 var N = Actions({
   times: [function(n){
@@ -102,8 +107,6 @@ n
 - both `N` and `ExtendedN` are independent of each other and reusable 
   in different inheritance chains without any extra work needed.
 - _and more... (see below)_
-
-
 
 
 ### What we get:
@@ -145,6 +148,11 @@ n
   all data, including normal methods is discarded.  
   _(this is not final)_
 
+
+**Notes:**
+- By design this tool-set promotes a _cooperative_ model and makes it
+  hard to change/modify existing signatures / _contracts_ in _extending_ 
+  code, hence the restrictions.
 
 
 ### The main entities:
