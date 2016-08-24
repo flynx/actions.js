@@ -107,7 +107,7 @@ n
 
 
 ### What we get:
-- **Call _extended_ actions automatically**  
+- **Call parent (_extended_) actions automatically**  
   All actions (methods) in a chain are guaranteed to get called if the 
   action is called.
 - **Thread arguments up the call chain**  
