@@ -454,6 +454,18 @@ and feature-to-feature dependencies.
 
 ```javascript
 var feature_set = new FeatureSet()
+
+
+// define features...
+// ...
+
+
+// setup features...
+feature_set
+  .setup([
+    'feature-tag',
+    //...
+  ])
 ```
 
 XXX
@@ -505,6 +517,20 @@ feature_set.Feature({
     // ...
   ] 
 })
+```
+
+XXX
+
+
+
+**Meta-features**  
+```javascript
+// meta-feature...
+feature_set.Feature('meta-feature-tag', [
+  'suggested-feature-tag',
+  'other-suggested-feature-tag',
+  // ...
+])
 ```
 
 XXX
