@@ -1,14 +1,14 @@
 {
-  "name": "ig-features",
+  "name": "ig-actions",
   "version": "1.0.5",
   "description": "",
-  "main": "features.js",
+  "main": "actions.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flynx/features.js.git"
+    "url": "git+https://github.com/flynx/actions.js.git"
   },
   "keywords": [
     "javascript",
@@ -19,9 +19,9 @@
   "author": "Alex A. Naanou <alex.nanou@gmail.com> (https://github.com/flynx)",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/flynx/features.js/issues"
+    "url": "https://github.com/flynx/actions.js/issues"
   },
-  "homepage": "https://github.com/flynx/features.js#readme",
+  "homepage": "https://github.com/flynx/actions.js#readme",
   "dependencies": {
     "ig-object": "^1.0.0"
   }
