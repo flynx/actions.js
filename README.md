@@ -1,11 +1,5 @@
 # Actions
 
-A set of tools for extending and calling methods (Actions) on object 
-inheritance chains.
-
-
-## Actions
-
 Actions are an extension to the JavaScript object model tailored for
 a set of specific tasks.
 
