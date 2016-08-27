@@ -147,7 +147,7 @@ n
 - By design this tool-set promotes a _cooperative_ model and makes it
   hard to change/modify existing signatures / _contracts_ in _extending_ 
   code, hence the restrictions.
-- `mix(..)` and the `.mixin*(..)` (MetaActions/ActionSet) method family 
+- `mix(..)` and the `.mix*(..)` (MetaActions/ActionSet) method family 
   usually copy references to actions to the target object, this is done 
   to go around the lack of multiple inheritance support in JavaScript 
   and to enable clean action set reuse.
