@@ -295,23 +295,14 @@ function(func){
 //			}
 // 		}
 //
-// 		// same as above but using a deferred instead of a callback...
-// 		function(..){
-//			... // pre code
-//			return $.Deferred()
-//				.done(function(<return>, ..){
-//					... // post code
-//				})
-// 		}
-//
 //
 // An action is essentially a method with several additional features:
 //
 // 	- actions are split into two stages:
 // 		pre: 	the code of the method is executed before the action 
 // 				event is fired
-// 		post:	if the action returns a callback function or a deferred
-// 				object it will be executed after the event is fired
+// 		post:	if the action returns a callback function it will be 
+// 				executed after the event is fired
 // 				NOTE: the signature if the post stage is the same as the
 // 					action's with the added return value as first argument
 // 					(the rest og the arguments are shifted by 1).
@@ -442,8 +433,9 @@ Action.prototype.pre = function(context, args){
 				// register is as a post handler...
 				if(res 
 						&& res !== context 
-						&& (res instanceof Function 
-							|| res.resolve instanceof Function)){
+						&& res instanceof Function){
+						//&& (res instanceof Function 
+						//	|| res.resolve instanceof Function)){
 					a.post = res
 				}
 			}
@@ -463,8 +455,9 @@ Action.prototype.pre = function(context, args){
 				// register is as a post handler...
 				if(res 
 						&& res !== context 
-						&& (res instanceof Function 
-							|| res.resolve instanceof Function)){
+						&& res instanceof Function){
+						//&& (res instanceof Function 
+						//	|| res.resolve instanceof Function)){
 					a.post = res
 
 					// reset the result...
@@ -501,9 +494,10 @@ Action.prototype.post = function(context, data){
 		.reverse()
 		.forEach(function(a){
 			a.post
-				&& (a.post.resolve ? 
-						a.post.resolve.apply(a.post, args)
-					: a.post.apply(context, args))
+				//&& (a.post.resolve ? 
+				//		a.post.resolve.apply(a.post, args)
+				//	: a.post.apply(context, args))
+				&& a.post.apply(context, args)
 		})
 
 	// wrapper handlers: post phase...
@@ -512,9 +506,10 @@ Action.prototype.post = function(context, data){
 		.reverse()
 		.forEach(function(a){
 			a.post
-				&& (a.post.resolve ? 
-						a.post.resolve.apply(a.post, res, outer, args.slice(1))
-					: a.post.call(context, res, outer, args.slice(1)))
+				//&& (a.post.resolve ? 
+				//		a.post.resolve.apply(a.post, res, outer, args.slice(1))
+				//	: a.post.call(context, res, outer, args.slice(1)))
+				&& a.post.call(context, res, outer, args.slice(1))
 		})
 
 	return res
