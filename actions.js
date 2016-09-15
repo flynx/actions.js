@@ -429,13 +429,11 @@ Action.prototype.pre = function(context, args){
 			if(a.pre){
 				res = a.pre.call(context, outer, args)
 
-				// if a handler returns a function or a deferred, 
-				// register is as a post handler...
+				// if a handler returns a function register is as a post
+				// handler...
 				if(res 
 						&& res !== context 
 						&& res instanceof Function){
-						//&& (res instanceof Function 
-						//	|| res.resolve instanceof Function)){
 					a.post = res
 				}
 			}
@@ -451,13 +449,11 @@ Action.prototype.pre = function(context, args){
 			if(a.pre){
 				res = a.pre.apply(context, args)
 
-				// if a handler returns a function or a deferred, 
-				// register is as a post handler...
+				// if a handler returns a function register is as a post
+				// handler...
 				if(res 
 						&& res !== context 
 						&& res instanceof Function){
-						//&& (res instanceof Function 
-						//	|| res.resolve instanceof Function)){
 					a.post = res
 
 					// reset the result...
@@ -494,9 +490,6 @@ Action.prototype.post = function(context, data){
 		.reverse()
 		.forEach(function(a){
 			a.post
-				//&& (a.post.resolve ? 
-				//		a.post.resolve.apply(a.post, args)
-				//	: a.post.apply(context, args))
 				&& a.post.apply(context, args)
 		})
 
@@ -506,9 +499,6 @@ Action.prototype.post = function(context, data){
 		.reverse()
 		.forEach(function(a){
 			a.post
-				//&& (a.post.resolve ? 
-				//		a.post.resolve.apply(a.post, res, outer, args.slice(1))
-				//	: a.post.call(context, res, outer, args.slice(1)))
 				&& a.post.call(context, res, outer, args.slice(1))
 		})
 
