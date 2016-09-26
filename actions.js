@@ -469,8 +469,9 @@ Action.prototype.pre = function(context, args){
 		})
 
 	// return context if nothing specific is returned...
-	res = res === undefined ? context : res
-	res = res === UNDEFINED ? undefined : res
+	res = res === undefined ? context 
+		: res === UNDEFINED ? undefined 
+		: res
 
 	return {
 		arguments: args,
