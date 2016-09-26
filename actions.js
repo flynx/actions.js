@@ -15,6 +15,9 @@ var object = require('ig-object')
 
 var args2array = function(a){ return [].slice.call(a) } 
 
+var UNDEFINED =
+module.UNDEFINED = ['undefined placeholder']
+
 
 
 /*********************************************************************/
@@ -457,6 +460,8 @@ Action.prototype.pre = function(context, args){
 					a.post = res
 
 					// reset the result...
+					// NOTE: this is the only difference between this 
+					// 		and wrapper stages...
 					res = context
 				}
 			}
@@ -465,6 +470,7 @@ Action.prototype.pre = function(context, args){
 
 	// return context if nothing specific is returned...
 	res = res === undefined ? context : res
+	res = res === UNDEFINED ? undefined : res
 
 	return {
 		arguments: args,
