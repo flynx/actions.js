@@ -127,9 +127,9 @@ n
   non destructive manner (e.g. via a `throw`), all actions in a chain are 
   guaranteed to be called, unless a fatal error condition.
 - **No argument shadowing**  
-  The _extending_ has access to all the arguments that the user passed
-  but can not modify or reformat them before the _extended_ action gets
-  them.
+  The _extending_ action has access to all the arguments that the user 
+  passed but can not modify or reformat them before the _extended_ action
+  gets them.
 - **No return shadowing / Single return point**  
   The _extending_ action can not replace the object returned by the 
   _extended_ action, though it can _cooperatively_ update/modify it if 
