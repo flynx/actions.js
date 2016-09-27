@@ -151,6 +151,9 @@ n
   usually copy references to actions to the target object, this is done 
   to go around the lack of multiple inheritance support in JavaScript 
   and to enable clean action set reuse.
+- `mix(..)` _mixes_ actions in order, i.e. later overloads the former,
+  this is not the same as the traditional multiple inheritance order in 
+  languages such as Python where the order is reversed.
 
 
 
