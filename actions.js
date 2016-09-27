@@ -1306,6 +1306,10 @@ function Actions(a, b){
 // NOTE: MetaActions is a special case, if given it will be used as the
 // 		prototype for the root object in the created chain...
 // 		...MetaActions order in the list has no effect.
+//
+// XXX what the mix order should be?
+// 		base, extending, surface		- order of application (current)
+// 		surface, extending, base		- python-like
 var mix =
 module.mix = 
 function(){
