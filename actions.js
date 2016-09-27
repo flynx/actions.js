@@ -1301,6 +1301,11 @@ function Actions(a, b){
 
 /*********************************************************************/
 
+// NOTE: this can only mix actions sets and MetaActions, i.e. only the 
+// 		actions, properties and .config will get handled...
+// NOTE: MetaActions is a special case, if given it will be used as the
+// 		prototype for the root object in the created chain...
+// 		...MetaActions order in the list has no effect.
 var mix =
 module.mix = 
 function(){
