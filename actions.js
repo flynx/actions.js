@@ -1217,7 +1217,7 @@ object.makeConstructor('ActionSet', MetaActions)
 //
 // This will pre-process an object to setup the action mechanics.
 //
-// If the 'this and prototype both contain a .config attribute then this
+// If the 'this' and prototype both contain a .config attribute then this
 // will make set <actions>.config.__proto__ = <prototype>.config 
 //
 //
@@ -1306,6 +1306,13 @@ module.mix =
 function(){
 	var args = [].slice.call(arguments)
 	var res = {}
+
+	// special case: if MetaActions is in the args then inherit the root
+	// 		object from it...
+	if(args.indexOf(MetaActions) >= 0){
+		args.splice(args.indexOf(MetaActions), 1)
+		res.__proto__ = MetaActions
+	}
 
 	var mixin = MetaActions.inlineMixin
 
