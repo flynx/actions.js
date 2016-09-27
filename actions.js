@@ -1311,6 +1311,15 @@ function(){
 
 	args.forEach(function(p){
 		res = Object.create(mixin.call(res, p))
+
+		// merge config...
+		if(p.config){
+			var config = res.config = res.config || Object.create({})
+
+			Object.keys(p.config).forEach(function(k){
+				res.config.__proto__[k] = JSON.parse(JSON.stringify(p.config[k]))
+			})
+		}
 	})
 
 	return res
