@@ -635,15 +635,132 @@ module.MetaActions = {
 	},
 
 
+	// Toggle handler cache...
+	//
+	//	Toggle cache...
+	//	.toggleHandlerCache()
+	//
+	//	Set caching on...
+	//	.toggleHandlerCache('on')
+	//	.toggleHandlerCache(true)
+	//
+	//	Set caching off...
+	//	.toggleHandlerCache('off')
+	//	.toggleHandlerCache(false)
+	//
+	//	Reset caching...
+	//	.toggleHandlerCache('!')
+	//
+	//	Get current caching state...
+	//	.toggleHandlerCache('?')
+	//
+	//	Get supported states...
+	//	.toggleHandlerCache('??')
+	//		-> ['on', 'off']
+	//
+	//
+	// NOTE: setting the cache on may prevent calling of actions event
+	// 		handlers of parent action-sets if they are added (via .on(..)
+	// 		or .one(..), ...) AFTER the current object cloned it's cache.
+	// 		to avoid this, care must be taken to reset the cache of 
+	// 		children objects, or not use caching for cases where action
+	// 		event handlers can be added on the tree in runtime.
+	//
+	//
+	// XXX EXPERIMENTAL...
+	// XXX should we use the toggler object here???
+	toggleHandlerCache: function(to){
+		if(to == '?'){
+			return this.__handler_cache ? 'on' : 'off'
+
+		} else if(to == '??'){
+			return ['on', 'off']
+		}
+
+		to = (to === true || to == 'on') ? true
+			: (to === false || to == 'off') ? false
+			: to == '!' ? !!this.__handler_cache
+			: !this.__handler_cache 
+
+		if(to){
+			// no local cache -> copy from parent...
+			if(this.__handler_cache 
+					&& !Object.hasOwnProperty(this, '__handler_cache')){
+				var parent = this.__handler_cache
+				var cache = this.__handler_cache = {}
+				for(var a in parent){
+					cache[a] = parent[a]
+				}
+
+			// local cache only...
+			} else {
+				this.__handler_cache = this.__handler_cache || {}
+			}
+
+		} else {
+			// NOTE: we do not delete here so as to shadow the parent's 
+			// 		cache...
+			this.__handler_cache = false
+		}
+
+		return this
+	},
+
+	// Rest handler cache...
+	// 	
+	// 	Reset the full cache...
+	// 	.resetHandlerCache()
+	// 		-> this
+	//
+	// 	Reset handler cache for action...
+	// 	.resetHandlerCache(action)
+	// 		-> this
+	//
+	// NOTE: when .toggleHandlerCache('?') is 'off' this has no effect.
+	//
+	// XXX EXPERIMENTAL...
+	resetHandlerCache: function(name){
+		var cache = this.__handler_cache
+		if(cache){
+			// full reset...
+			if(name == null){
+				this.__handler_cache = {}
+
+			// reset action...
+			} else {
+				// no local cache -> copy from parent...
+				if(!Object.hasOwnProperty(this, '__handler_cache')){
+					var parent = this.__handler_cache
+					var cache = this.__handler_cache = {}
+					for(var a in parent){
+						cache[a] = parent[a]
+					}
+				}
+
+				delete cache[name]
+			}
+		}
+		return this
+	},
+
 	// Get action handlers from the inheritance chain...
 	//
 	// NOTE: this collects both the event handlers (in order of hierarchy,
 	// 		then order of definition) and actions (in order of hierarchy)
 	// NOTE: this is the correct order for 'pre' calling, but is the 
 	// 		reverse of how the 'post' handlers must be called.
+	// NOTE: if .toggleHandlerCache('?') is on, this will serch once and
+	// 		return the cached results on every subsequent call.
 	//
 	// For more docs on handler sequencing and definition see: .on(..)
 	getHandlerList: function(name){
+		// handler cache...  XXX EXPERIMENTAL...
+		var cache = this.__handler_cache
+		if(cache && cache[name]){
+			return cache[name]
+		}
+
+		// get the handlers...
 		var handlers = []
 		var cur = this
 		while(cur.__proto__ != null){
@@ -664,6 +781,12 @@ module.MetaActions = {
 
 			cur = cur.__proto__
 		}
+
+		// handler cache... XXX EXPERIMENTAL...
+		if(cache){
+			cache[name] = handlers
+		}
+
 		return handlers
 	},
 
@@ -760,6 +883,8 @@ module.MetaActions = {
 			action = mode[0]
 			mode = mode[1]
 
+			that.resetHandlerCache(action)
+
 			// keep the original handler for future use...
 			var a_handler = handler
 
@@ -827,6 +952,8 @@ module.MetaActions = {
 				var mode = action.split('.')
 				action = mode[0]
 				mode = mode[1]
+
+				that.resetHandlerCache(action)
 
 				// get the handlers...
 				var h = that._action_handlers[action] || []
@@ -966,6 +1093,8 @@ module.MetaActions = {
 		descriptors = descriptors || true
 		all_attr_types = all_attr_types || false
 
+		this.resetHandlerCache()
+
 		if(all){
 			var keys = []
 			for(var k in from){
@@ -1044,6 +1173,8 @@ module.MetaActions = {
 		descriptors = descriptors || true
 		all_attr_types = all_attr_types || false
 
+		this.resetHandlerCache()
+
 		if(all){
 			var keys = []
 			for(var k in from){
@@ -1078,7 +1209,7 @@ module.MetaActions = {
 		return this
 	},
 
-	// This is similare in effect but different in mechanics to .inlineMixout(..)
+	// This is similar in effect but different in mechanics to .inlineMixout(..)
 	//
 	// This will find and remove a mixin object from the inheritance chian.
 	//
@@ -1089,6 +1220,7 @@ module.MetaActions = {
 		// pop the mixin off the chain...
 		if(o != null){
 			o.__proto__ = o.__proto__.__proto__
+			this.resetHandlerCache()
 		}
 
 		return this
