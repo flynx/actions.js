@@ -1093,7 +1093,8 @@ module.MetaActions = {
 		descriptors = descriptors || true
 		all_attr_types = all_attr_types || false
 
-		(this.resetHandlerCache || MetaActions.resetHandlerCache).call(this)
+		resetHandlerCache = (this.resetHandlerCache || MetaActions.resetHandlerCache)
+		resetHandlerCache.call(this)
 
 		if(all){
 			var keys = []
