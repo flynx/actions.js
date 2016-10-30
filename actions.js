@@ -757,7 +757,7 @@ module.MetaActions = {
 		// handler cache...  XXX EXPERIMENTAL...
 		var cache = this.__handler_cache
 		if(cache && cache[name]){
-			return cache[name]
+			return cache[name].slice()
 		}
 
 		// get the handlers...
