@@ -897,13 +897,15 @@ module.MetaActions = {
 					// 		for removal via. .off(..)
 				a_handler.orig_handler = old_handler.orig_handler || old_handler
 
+				a_handler.orig_handler.event_tag = tag
+
 			// not pre mode...
 			} else if(mode != 'pre') {
 				// XXX
 				throw 'Unknown action mode: '+action+'.'+mode
 			}
 
-			a_handler.tag = tag
+			a_handler.event_tag = tag
 
 			// register handlers locally only...
 			if(!that.hasOwnProperty('_action_handlers')){
@@ -989,7 +991,7 @@ module.MetaActions = {
 					h.splice.apply(h, 
 							[0, h.length]
 								.concat(h.filter(function(e){ 
-									return e.tag != handler })))
+									return e.event_tag != handler })))
 				}
 			})
 		}
@@ -1088,15 +1090,17 @@ module.MetaActions = {
 	// NOTE: this will override existing own attributes.
 	//
 	// XXX should we include functions by default????
-	inlineMixin: function(from, all, descriptors, all_attr_types){
+	inlineMixin: function(from, options){
 		// defaults...
-		descriptors = descriptors || true
-		all_attr_types = all_attr_types || false
+		options = options || {}
+		var descriptors = options.descriptors || true
+		var all_attr_types = options.all_attr_types || false
+		var source_tag = options.source_tag
 
 		resetHandlerCache = (this.resetHandlerCache || MetaActions.resetHandlerCache)
 		resetHandlerCache.call(this)
 
-		if(all){
+		if(options.all){
 			var keys = []
 			for(var k in from){
 				keys.push(k)
@@ -1132,6 +1136,18 @@ module.MetaActions = {
 						|| attr instanceof Action){
 					that[k] = attr
 				}
+				// source tag actions...
+				if(source_tag && attr instanceof Action){
+					// XXX not sure if this is the right way to go...
+					if(that[k].source_tag || that[k].func.source_tag){
+						console.warn('Aactions: about to overwrite source tag...\n'
+							+'  from: "'+(that[k].source_tag || that[k].func.source_tag)+'"\n'
+							+'  to: "'+source_tag+'"\n'
+							+'  on:', that[k])
+					}
+					that[k].func.source_tag = source_tag
+					that[k].source_tag = source_tag
+				}
 			}
 		})
 
@@ -1141,11 +1157,11 @@ module.MetaActions = {
 	// Same as .inlineMixin(..) but isolates a mixin in a seporate object
 	// in the inheritance chain...
 	//
-	mixin: function(from, all, descriptors, all_attr_types){
+	mixin: function(from, options){
 		var proto = Object.create(this.__proto__)
 
 		// mixinto an empty object
-		proto.inlineMixin(from, all, descriptors, all_attr_types)
+		proto.inlineMixin(from, options)
 
 		// mark the mixin for simpler removal...
 		proto.__mixin_source = from
@@ -1158,8 +1174,8 @@ module.MetaActions = {
 	// Mixin a set of local actions into an object...
 	//
 	// XXX this will not work on non-actions...
-	mixinTo: function(to, all, descriptors, all_attr_types){
-		return this.mixin.call(to, this, all, descriptors, all_attr_types)
+	mixinTo: function(to, options){
+		return this.mixin.call(to, this, options)
 	},
 
 
@@ -1169,14 +1185,15 @@ module.MetaActions = {
 	// 		not be affected...
 	// NOTE: this will not affect event handlers, they should be removed
 	// 		manually if needed...
-	inlineMixout: function(from, all, descriptors, all_attr_types){
+	inlineMixout: function(from, options){
 		// defaults...
-		descriptors = descriptors || true
-		all_attr_types = all_attr_types || false
+		options = options || {}
+		var descriptors = options.descriptors || true
+		var all_attr_types = options.all_attr_types || false
 
 		(this.resetHandlerCache || MetaActions.resetHandlerCache).call(this)
 
-		if(all){
+		if(options.all){
 			var keys = []
 			for(var k in from){
 				keys.push(k)
@@ -1229,8 +1246,8 @@ module.MetaActions = {
 
 	// Remove a set of local mixed in actions from object...
 	//
-	mixoutFrom: function(to, all, descriptors, all_attr_types){
-		return this.mixout.call(to, this, all, descriptors, all_attr_types)
+	mixoutFrom: function(to, options){
+		return this.mixout.call(to, this, options)
 	},
 
 	// Create a child object...
@@ -1275,6 +1292,12 @@ module.MetaActions = {
 
 			if(cur.pre){
 				str += p 
+					// meta...
+					+ (cur.pre.event_tag ? 
+						normalizeTabs('// Event tag: ' + cur.pre.event_tag) + p : '')
+					+ (cur.pre.source_tag ? 
+						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
+					// code...
 					+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
 					+ p
 			}
@@ -1285,6 +1308,12 @@ module.MetaActions = {
 
 			if(cur.post){
 				str += p + p 
+					// meta...
+					+ (cur.post.event_tag ? 
+						normalizeTabs('// Event tag: ' + cur.post.event_tag) + p : '')
+					+ (cur.post.source_tag ? 
+						normalizeTabs('// Source tag: ' + cur.post.source_tag) + p : '')
+					// code...
 					+ normalizeTabs(cur.post.toString()).replace(/\n/g, p)
 			}
 		}
