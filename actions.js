@@ -1310,7 +1310,7 @@ module.MetaActions = {
 				str += p + p 
 					// meta...
 					+ (cur.post.event_tag ? 
-						normalizeTabs('// Event tag: ' + cur.post.event_tag) + p : '')
+						normalizeTabs('// Event source tag: ' + cur.post.event_tag) + p : '')
 					+ (cur.post.source_tag ? 
 						normalizeTabs('// Source tag: ' + cur.post.source_tag) + p : '')
 					// code...
@@ -1337,7 +1337,13 @@ module.MetaActions = {
 
 			if(cur.pre){
 				p.append($('<pre>').html(
-					normalizeTabs(cur.pre.toString())
+					// meta...
+					(cur.pre.event_tag ? 
+						normalizeTabs('// Event tag: ' + cur.pre.event_tag) + p : '')
+					+ (cur.pre.source_tag ? 
+						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
+					// code...
+					+ normalizeTabs(cur.pre.toString())
 						.replace(/return/g, '<b>return</b>')))
 			}
 
@@ -1345,7 +1351,13 @@ module.MetaActions = {
 
 			if(cur.post){
 				p.append($('<pre>').html(
-					normalizeTabs(cur.post.toString())))
+					// meta...
+					(cur.post.event_tag ? 
+						normalizeTabs('// Event source tag: ' + cur.post.event_tag) + p : '')
+					+ (cur.post.source_tag ? 
+						normalizeTabs('// Source tag: ' + cur.post.source_tag) + p : '')
+					// code...
+					+ normalizeTabs(cur.post.toString())))
 			}
 		}
 
