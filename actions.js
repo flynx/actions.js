@@ -1138,13 +1138,19 @@ module.MetaActions = {
 				}
 				// source tag actions...
 				if(source_tag && attr instanceof Action){
+					// existing tag...
+					if(that[k].source_tag == source_tag || that[k].func.source_tag == source_tag){
+						return
+
+					// new tag...
 					// XXX not sure if this is the right way to go...
-					if(that[k].source_tag || that[k].func.source_tag){
+					} else if(that[k].source_tag != source_tag || that[k].func.source_tag != source_tag){
 						console.warn('Aactions: about to overwrite source tag...\n'
 							+'  from: "'+(that[k].source_tag || that[k].func.source_tag)+'"\n'
 							+'  to: "'+source_tag+'"\n'
 							+'  on:', that[k])
 					}
+
 					that[k].func.source_tag = source_tag
 					that[k].source_tag = source_tag
 				}
