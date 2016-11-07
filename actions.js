@@ -1144,7 +1144,7 @@ module.MetaActions = {
 
 					// new tag...
 					// XXX not sure if this is the right way to go...
-					} else if(that[k].source_tag != source_tag || that[k].func.source_tag != source_tag){
+					} else if(that[k].source_tag || that[k].func.source_tag){
 						console.warn('Aactions: about to overwrite source tag...\n'
 							+'  from: "'+(that[k].source_tag || that[k].func.source_tag)+'"\n'
 							+'  to: "'+source_tag+'"\n'
