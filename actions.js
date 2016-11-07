@@ -204,9 +204,17 @@ module.UNDEFINED = ['undefined placeholder']
 //		1) pre phase of protocol action (outer)
 //		2) implementation action (inner)
 //		3) post phase of protocol action (outer)
+//	
+//	Differences form the base action protocol:
+//		- returning undefined from inner will keep the outer return value.
+//		  ...this is different from the base action protocol where returning
+//		  undefined will get replaces by the context (this), here to 
+//		  guarantee returning the context, it should be returned explicitly,
+//		  otherwise the responsibility is shifted to the outer action.
+//		- returning anything else will override the outer return
 //
 //	NOTE: this will not affect to protocol/signature of the outer action
-//		in any way.
+//		in any way other than the ability to override the return value.
 //	NOTE: both the inner and outer actions will get passed the same 
 //		arguments.
 //	NOTE: another use-case is testing/debugging actions.
@@ -363,8 +371,6 @@ function Action(name, doc, ldoc, func){
 	}
 
 	// create the actual instance we will be returning...
-	//var meth = function(){
-	//	return meth.chainApply(this, null, arguments) }
 	var meth = function(){
 		return meth.chainApply(this, null, arguments) }
 	meth.__proto__ = this.__proto__
@@ -513,23 +519,29 @@ Action.prototype.post = function(context, data){
 }
 
 // Chaining...
+// 
+// For docs see: MetaActions.chainApply(..) and the base module doc.
 Action.prototype.chainApply = function(context, inner, args){
 	args = [].slice.call(args || [])
-	var res = context
 	var outer = this.name
 
 	var data = this.pre(context, args)
 
 	// call the inner action/function if preset....
 	if(inner){
-		//res = inner instanceof Function ? 
-		inner instanceof Function ? 
-				inner.call(context, args)
+		// XXX need a way to pass data.result to inner... (???)
+		var res = inner instanceof Function ? 
+				inner.apply(context, args)
 			: inner instanceof Array && inner.length > 0 ? 
-				context[inner.pop()].chainCall(context, inner, args)
+				context[inner.pop()].chainApply(context, inner, args)
 			: typeof(inner) == typeof('str') ?
-				context[inner].chainCall(context, null, args)
-			: null
+				context[inner].chainApply(context, null, args)
+			: undefined
+
+		// push the inner result into the chian...
+		if(res !== undefined){
+			data.result = res
+		}
 	}
 
 	return this.post(context, data)
@@ -1051,9 +1063,18 @@ module.MetaActions = {
 	//
 	// The given arguments are passed as-is to both the outer and inner
 	// actions.
-	// The base inner action return value is passed to the outer action
+	// The inner action return value is passed to the outer action
 	// .post handlers.
 	//
+	// inner return value is handling slightly differs from the base
+	// action protocol in two respects:
+	// 	1) to keep the outer return value, inner must return undefined.
+	// 	2) to guarantee returning the context regardless of outer's return 
+	// 		value, the inner must return the context (this) explicilty.
+	//
+	// NOTE: as a restriction of the action protocol the inner return will
+	// 		override the return value of outer, but there is no way to 
+	// 		see that value.
 	// NOTE: these call the action's .chainApply(..) and .chainCall(..)
 	// 		methods, thus is not compatible with non-action methods...
 	// NOTE: .chianCall('action', ..) is equivalent to .action.chianCall(..)
