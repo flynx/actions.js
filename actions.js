@@ -528,8 +528,10 @@ Action.prototype.chainApply = function(context, inner, args){
 	var data = this.pre(context, args)
 
 	// call the inner action/function if preset....
+	// NOTE: this is slightly different (see docs) to what happens in 
+	// 		.pre(..)/.post(..), thus we are doing this separately and 
+	// 		not reusing existing code...
 	if(inner){
-		// XXX need a way to pass data.result to inner... (???)
 		var res = inner instanceof Function ? 
 				inner.apply(context, args)
 			: inner instanceof Array && inner.length > 0 ? 
