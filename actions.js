@@ -538,8 +538,13 @@ Action.prototype.chainApply = function(context, inner, args){
 				context[inner].chainApply(context, null, args)
 			: undefined
 
+		// call the resulting function...
+		if(res instanceof Function){
+			res.apply(context, [context].concat(args))
+			data.result = context
+
 		// push the inner result into the chian...
-		if(res !== undefined){
+		} else if(res !== undefined){
 			data.result = res
 		}
 	}
