@@ -722,6 +722,7 @@ module.MetaActions = {
 			this.__handler_cache = false
 		}
 
+		// XXX this is not the handler protocol...
 		return this
 	},
 
