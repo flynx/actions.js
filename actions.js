@@ -1436,6 +1436,7 @@ object.makeConstructor('ActionSet', MetaActions)
 // 		<name> : [
 // 			<doc>,
 // 			<long-doc>,
+// 			<attrs>,
 // 			<function>
 // 		],
 //
@@ -1454,6 +1455,8 @@ object.makeConstructor('ActionSet', MetaActions)
 //
 //
 // NOTE: the action function is always last.
+// NOTE: <attrs> if given must be right before the function and must not
+// 		be a string...
 // NOTE: if <prototype> is not given, MetaActions will be used as default.
 //
 // For more documentation see: Action(..).
@@ -1490,8 +1493,16 @@ function Actions(a, b){
 
 		var func = arg.pop()
 
+		// attrs...
+		var last = arg[arg.length-1]
+		var attrs = last != null && typeof(last) != typeof('str') ? arg.pop() : {}
+
 		// create a new action...
-		obj[k] = new Action(k, arg[0], arg[1], func)
+		var a = obj[k] = new Action(k, arg[0], arg[1], func)
+
+		// setup attrs...
+		Object.keys(attrs)
+			.forEach(function(k){ a[k] = attrs[k] })
 	})
 
 	if(proto != null){
