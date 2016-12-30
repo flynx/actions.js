@@ -601,6 +601,21 @@ module.MetaActions = {
 		return this.actions.length
 	},
 
+	// Get action attribute...
+	//
+	getAttr: function(action, attr){
+		var cur = this
+
+		// go up the proto chain...
+		while(cur.__proto__ != null){
+			//if(cur[action] != null && attr in cur[action]){
+			if(cur[action] != null && cur[action][attr] !== undefined){
+				return cur[action][attr]
+			}
+			cur = cur.__proto__
+		}
+	},
+
 	// Get action documentation...
 	//
 	getDoc: function(actions){
