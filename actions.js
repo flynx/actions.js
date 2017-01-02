@@ -603,7 +603,7 @@ module.MetaActions = {
 
 	// Get action attribute...
 	//
-	getAttr: function(action, attr){
+	getActionAttr: function(action, attr){
 		var cur = this
 
 		// go up the proto chain...
