@@ -400,6 +400,17 @@ Action.prototype.__proto__ = Function
 //
 // 	.post(context, data)
 // 		-> result
+// 		
+// 		
+// Call data format:
+// 	{
+//		arguments: args,
+//
+//		wrapper: call_wrapper,
+//		handlers: handlers,
+//
+//		result: res,
+// 	}
 //
 //
 // NOTE: All the defaults should be handled by the pre stage, post will 
@@ -593,12 +604,6 @@ module.MetaActions = {
 			}
 		}
 		return res
-	},
-
-	// Number of defined actions...
-	//
-	get length(){
-		return this.actions.length
 	},
 
 	// Get action attribute...
