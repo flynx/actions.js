@@ -1516,9 +1516,10 @@ function Actions(a, b){
 		// attrs...
 		var last = arg[arg.length-1]
 		var attrs = last != null && typeof(last) != typeof('str') ? arg.pop() : {}
+		var ldoc = typeof(arg[1]) == typeof('str') ? arg[1] : null
 
 		// create a new action...
-		var a = obj[k] = new Action(k, arg[0], arg[1], func)
+		var a = obj[k] = new Action(k, arg[0], ldoc, func)
 
 		// setup attrs...
 		Object.keys(attrs)
