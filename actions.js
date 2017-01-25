@@ -1325,7 +1325,7 @@ module.MetaActions = {
 		return o
 	},
 
-	getSourceTags: function(name){
+	getHandlerSourceTags: function(name){
 		return this.getHandlers(name)
 			.map(function(a){
 				return a.pre ? (a.pre.source_tag || a.pre.event_tag)
