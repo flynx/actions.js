@@ -1332,7 +1332,7 @@ module.MetaActions = {
 					: a.post ? (a.post.source_tag || a.post.event_tag)
 					: null
 			})
-	},
+			.unique() },
 
 	// doc generators...
 	//
