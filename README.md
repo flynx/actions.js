@@ -300,9 +300,6 @@ _action_ is build-in.
 
   <action-set>.actions
       -> list of action names
-
-  <action-set>.length
-      -> number of actions
   ```
 
 
