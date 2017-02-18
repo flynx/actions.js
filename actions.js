@@ -291,6 +291,12 @@ function(func){
 
 // Construct an action object...
 //
+// 	Action(<name>, <function>)
+// 	Action(<name>[, <doc>[, <long-doc>]][, <attrs>,] <function>)
+// 	Action(<name>, [ [<doc>[, <long-doc>]][, <attrs>,] <function> ])
+// 		-> <action>
+// 	
+//
 // Action function format:
 //
 // 		// pre event code...
@@ -356,13 +362,13 @@ function(func){
 // XXX might be a good idea to add an option to return the full results...
 var Action =
 module.Action =
-function Action(name, doc, ldoc, func){
+function Action(name, doc, ldoc, attrs, func){
 	// we got called without a 'new'...
 	if(this == null || this.constructor !== Action){
 		// XXX using something like .apply(.., arguemnts) would be more
 		// 		generel but have no time to figure out how to pass it 
 		// 		to new without the later complaining...
-		return new Action(name, doc, ldoc, func)
+		return new Action(name, doc, ldoc, attrs, func)
 	}
 
 	// prevent action overloading...
@@ -374,6 +380,18 @@ function Action(name, doc, ldoc, func){
 	var meth = function(){
 		return meth.chainApply(this, null, arguments) }
 	meth.__proto__ = this.__proto__
+
+	// precess args...
+	var args = doc instanceof Array ? 
+		doc 
+		: [].slice.call(arguments)
+			.filter(function(e){ return e !== undefined })
+			.slice(1)
+	func = args.pop()
+	last = args[args.length-1]
+	attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
+	doc = typeof(args[0]) == typeof('str') ? args.shift() : null
+	ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
 
 	// populate the action attributes...
 	//meth.name = name
@@ -387,6 +405,10 @@ function Action(name, doc, ldoc, func){
 
 	// make introspection be a bit better...
 	meth.toString = func.toString.bind(func)
+
+	// setup attrs...
+	Object.keys(attrs)
+		.forEach(function(k){ meth[k] = attrs[k] })
 
 	return meth
 }
@@ -1520,19 +1542,8 @@ function Actions(a, b){
 			return
 		}
 
-		var func = arg.pop()
-
-		// attrs...
-		var last = arg[arg.length-1]
-		var attrs = last != null && typeof(last) != typeof('str') ? arg.pop() : {}
-		var ldoc = typeof(arg[1]) == typeof('str') ? arg[1] : null
-
 		// create a new action...
-		var a = obj[k] = new Action(k, arg[0], ldoc, func)
-
-		// setup attrs...
-		Object.keys(attrs)
-			.forEach(function(k){ a[k] = attrs[k] })
+		var a = obj[k] = Action(k, arg)
 	})
 
 	if(proto != null){

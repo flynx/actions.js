@@ -363,7 +363,7 @@ _action_ is build-in.
   All action protocol details apply.
 
   **Notes:**
-  - there is not reliable way to call the post phase without first
+  - there is no reliable way to call the post phase without first
     calling the pre phase due to how the pre phase is defined (i.e.
     pre phase functions can return post phase functions).
 
