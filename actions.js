@@ -1543,7 +1543,7 @@ function Actions(a, b){
 		}
 
 		// create a new action...
-		var a = obj[k] = Action(k, arg)
+		var a = obj[k] = new Action(k, arg)
 	})
 
 	if(proto != null){
