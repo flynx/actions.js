@@ -630,14 +630,36 @@ module.MetaActions = {
 
 	// Get action attribute...
 	//
+	// NOTE: this will get attribute set both on the action object and 
+	// 		the action function, this covers two usecases:
+	// 		1) action constructor attributes...
+	// 			someAction: ['...',
+	// 				// action attribute...
+	// 				{attr: 'value'},
+	// 				function(){ ... }],
+	// 		2) action modifiers... 
+	// 			var modifyAction = function(func){
+	// 				// function attribute...
+	// 				func.attr = 'value'
+	// 				return func
+	// 			}
+	//			...
+	// 			someAction: ['...',
+	// 				modifyAction(function(){ ... })],
 	getActionAttr: function(action, attr){
 		var cur = this
 
 		// go up the proto chain...
 		while(cur.__proto__ != null){
-			//if(cur[action] != null && attr in cur[action]){
-			if(cur[action] != null && cur[action][attr] !== undefined){
-				return cur[action][attr]
+			if(cur[action] != null){
+				// attribute of action...
+				if(cur[action][attr] !== undefined){
+					return cur[action][attr]
+
+				// attribute of action function...
+				} else if(cur[action].func && cur[action].func[attr] !== undefined){
+					return cur[action].func[attr]
+				}
 			}
 			cur = cur.__proto__
 		}
