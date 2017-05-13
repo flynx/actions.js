@@ -1378,6 +1378,17 @@ module.MetaActions = {
 			})
 			.unique() },
 
+
+	// Run a function in the context of the action set...
+	//
+	// This is here simply as a utility function, to enable running code 
+	// in a concatinative manner without interruption...
+	run: function(func){
+		var res = func ? func.call(this) : undefined
+		return res === undefined ? this : res
+	},
+
+
 	// doc generators...
 	//
 	// XXX would be nice to make these prop of the action itself but I 
