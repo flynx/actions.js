@@ -1381,6 +1381,9 @@ module.MetaActions = {
 
 	// Run a function in the context of the action set...
 	//
+	// This will return 'this' if func returns undefined, otherwise func
+	// return value is returned.
+	//
 	// This is here simply as a utility function, to enable running code 
 	// in a concatinative manner without interruption...
 	run: function(func){
