@@ -1265,6 +1265,10 @@ module.MetaActions = {
 		// mark the mixin for simpler removal...
 		proto.__mixin_source = from
 
+		if(options.source_tag){
+			proto.__mixin_tag = options.source_tag
+		}
+
 		this.__proto__ = proto
 
 		return this
