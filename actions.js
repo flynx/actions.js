@@ -1166,7 +1166,8 @@ module.MetaActions = {
 		while(proto != null){
 			// we have a hit...
 			if(proto.hasOwnProperty('__mixin_source') 
-					&& proto.__mixin_source === from){
+					&& (proto.__mixin_source === from
+						|| proto.__mixin_tag == from)){
 				return pre ? cur : proto
 			}
 			// go to next item in chain...
@@ -1265,7 +1266,8 @@ module.MetaActions = {
 		// mark the mixin for simpler removal...
 		proto.__mixin_source = from
 
-		if(options.source_tag){
+		// add source tag to proto...
+		if(options && options.source_tag){
 			proto.__mixin_tag = options.source_tag
 		}
 
