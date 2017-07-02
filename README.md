@@ -52,6 +52,9 @@ Another thing to note here is that the code above, though quite simple is
 not reusable, i.e.:
 - we can't simply use the extending method for any other parent unless we
   either copy/rewrite it or complicate the code.
+  ES5/ES6 only partially fixes this issue as `super` can only be used in 
+  some cases (literal methods) and not others (functions and functions as
+  methods) which complicates things and makes them non-uniform. 
 - we can't use the extending method stand-alone, for example for testing
 
 It is possible to go around these issues but not without introducing
@@ -140,7 +143,6 @@ n
   The only two things _inherited_ from the object defining the actions 
   via the mixin methods or `mix` function are properties and actions, 
   all data, including normal methods is discarded.  
-  _(this is not final)_
 
 
 **Notes:**
@@ -221,26 +223,27 @@ Root Action                             o---|---x
 
 ```
 
-- a method, created by `Action(..)`,
-- calls all the shadowed/overloaded actions in the inheritance 
+- `Action(..)` creates a method (an _action_),
+- an _action_ calls all the shadowed/overloaded actions in the inheritance 
   chain in sequence implicitly,  
   **Notes:**   
     - there is no way to prevent an action in the chain from
 		  running, this is by design, i.e. no way to fully shadow.
-- actions that do not shadow anything are called _base_ or _root actions_.
-- returns the action set (`this`) by default (for call chaining),
+- top actions in the inheritance chain are called _base_ or _root actions_.
+- an action returns the action set (`this`) by default (for call chaining),
 - the base/root action can return any value.  
   **Notes:**  
     - if undefined is returned, it will be replaced by the 
 		  action context/action set.
+	- `false` and `null` are returned as-is.
     - there is no distinction between root and other actions
 		  other than that root action's return values are not 
 		  ignored.
-- can consist of two parts: the first is called before the 
-  shadowed action (_pre-callback_) and the second after (_post-callback_).
+- an action can consist of two parts: the first is called before the 
+  next action in chain (_pre-callback_) and the second after (_post-callback_).
 - post-callback has access to the return value and can modify it
   but not replace it.
-- can be bound to, a-la an event, calling the handlers when it is 
+- an action can be bound to, a-la an event, calling the handlers when it is 
   called (_see below_), 
 
 
@@ -263,9 +266,9 @@ action_set.on('action_name.pre', function(){
 })
 ```
 
-- a function,
-- can be bound to run before and/or after the action itself,
-- is local to an action set it was bound via,
+- a handler is a function,
+- it can be bound to run before and/or after the action itself,
+- it is local to an action set it was bound via,
 - when an action is triggered from an action set, all the pre 
   handlers in its inheritance chain will be called before the 
   respective actions they are bound to and all the post handlers
@@ -432,19 +435,19 @@ _action_ is build-in.
 
 3. `.__call__` action / handler
 
-	This action if defined is called for every action called. It behaves
-	like any other action but with a fixed signature, it always receives 
-	the action name as first argument and a list of action arguments as
-	the second arguments, and as normal a result on the post phase.
+  This action if defined is called for every action called. It behaves
+  like any other action but with a fixed signature, it always receives 
+  the action name as first argument and a list of action arguments as
+  the second arguments, and as normal a result on the post phase.
 
   **Notes:**
-	- it is not necessary to define the actual action, binding to a
-		handler will also work.
-	- one should not call actions directly from within a __call__ 
-		handler as that will result in infinite recursion.
-		XXX need a way to prevent this...
-	- one should use this with extreme care as this will introduce 
-		an overhead on all the actions if not done carefully.
+  - it is not necessary to define the actual action, binding to a
+    handler will also work.
+  - one should not call actions directly from within a __call__ 
+    handler as that will result in infinite recursion.
+    XXX need a way to prevent this...
+  - one should use this with extreme care as this will introduce 
+    an overhead on all the actions if not done carefully.
 
 
 
