@@ -1170,6 +1170,7 @@ module.MetaActions = {
 	// 	.mro('item')
 	// 		-> items
 	//
+	// NOTE: this will return the full MRO including Object.prototype
 	mro: function(target){
 		target = target || 'tag'
 		var res = []
@@ -1186,6 +1187,7 @@ module.MetaActions = {
 	
 	// Get mixin object in inheritance chain...
 	//
+	// NOTE: from can be either an explicit action object or a tag...
 	// NOTE: if pre is true this will return the chain item before the 
 	// 		mixin, this is useful, for example, to remove mixins, see 
 	// 		.mixout(..) for an example...
