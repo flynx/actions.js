@@ -444,10 +444,12 @@ _action_ is build-in.
   - it is not necessary to define the actual action, binding to a
     handler will also work.
   - one should not call actions directly from within a __call__ 
-    handler as that will result in infinite recursion.
-    XXX need a way to prevent this...
+    handler as that will result in infinite recursion.  
   - one should use this with extreme care as this will introduce 
     an overhead on all the actions if not done carefully.
+
+
+XXX need docs on mix(..) and .mix*(..) protocols...
 
 
 
