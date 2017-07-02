@@ -1155,28 +1155,52 @@ module.MetaActions = {
 	chainCall: function(outer, inner){
 		return this[outer].chainApply(this, inner, args2array(arguments).slice(2)) },
 
+	// Get action/method resolution order...
+	//
+	// 	List mixin tags...
+	// 	.mro()
+	// 	.mro('tag')
+	// 		-> tags
+	//
+	// 	List mixin objects...
+	// 	.mro('object')
+	// 		-> objects
+	//
+	// 	List mixin tag-object pairs...
+	// 	.mro('item')
+	// 		-> items
+	//
+	mro: function(target){
+		target = target || 'tag'
+		var res = []
+		var cur = this
+		while(cur != null){
+			res.push(target == 'tag' ? cur.__mixin_tag
+				: target == 'object' ? cur
+				: [cur.__mixin_tag, cur])
+			// go to next item in chain...
+			cur = cur.__proto__
+		}
+		return res
+	},
+	
 	// Get mixin object in inheritance chain...
 	//
 	// NOTE: if pre is true this will return the chain item before the 
 	// 		mixin, this is useful, for example, to remove mixins, see 
 	// 		.mixout(..) for an example...
 	getMixin: function(from, pre){
-		var cur = this
-		var proto = this.__proto__
-		while(proto != null){
-			// we have a hit...
-			if(proto.hasOwnProperty('__mixin_source') 
-					&& (proto.__mixin_source === from
-						|| proto.__mixin_tag == from)){
-				return pre ? cur : proto
-			}
-			// go to next item in chain...
-			cur = proto
-			proto = cur.__proto__
-		}
-		return null
+		var mro = this.mro('object')
+		var res = (pre ? mro.slice(1) : mro)
+			.filter(function(e){ 
+				return e.__mixin_tag == from 
+					|| e.__mixin_source === from })
+			.shift()
+		return pre ?
+			mro[mro.indexOf(res)-1]
+			: res
 	},
-	
+
 	// Mixin a set of actions into this...
 	//
 	// NOTE: if 'all' is set then mixin all the actions available, 
