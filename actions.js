@@ -1284,6 +1284,9 @@ module.MetaActions = {
 	// in the inheritance chain...
 	//
 	mixin: function(from, options){
+		options = options || {}
+		options.source_tag = options.source_tag || from.__mixin_tag
+
 		var proto = Object.create(this.__proto__)
 
 		// mixinto an empty object
@@ -1302,13 +1305,22 @@ module.MetaActions = {
 		return this
 	},
 
+	// Mixin from after target in the mro...
+	//
+	// NOTE: target must be .getMixin(..) compatible...
+	mixinAfter: function(target, from, options){
+		this
+			.getMixin(target)
+			.mixin(from, options)
+		return this
+	},
+
 	// Mixin a set of local actions into an object...
 	//
 	// XXX this will not work on non-actions...
 	mixinTo: function(to, options){
 		return this.mixin.call(to, this, options)
 	},
-
 
 	// Remove mixed in actions from this...
 	//
@@ -1365,14 +1377,16 @@ module.MetaActions = {
 	// NOTE: this will remove only the first occurance of a mixin.
 	mixout: function(from){
 		var o = this.getMixin(from, true)
+		var target = null
 
 		// pop the mixin off the chain...
 		if(o != null){
+			target = o.__proto__
 			o.__proto__ = o.__proto__.__proto__
 			this.resetHandlerCache()
 		}
 
-		return this
+		return target
 	},
 
 	// Remove a set of local mixed in actions from object...
