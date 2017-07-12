@@ -667,6 +667,17 @@ module.MetaActions = {
 
 	// Get action documentation...
 	//
+	// Format:
+	// 	{
+	// 		action-name: [
+	// 			doc,
+	// 			long_doc,
+	// 			name,
+	// 		],
+	// 		...
+	// 	}
+	//
+	// NOTE: oveloading actions will shadow parents doc if they define .doc.
 	getDoc: function(actions){
 		var res = {}
 		var that = this
