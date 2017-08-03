@@ -641,12 +641,12 @@ function Alias(alias, target){
 		return new Alias(alias, target)
 	}
 
-	// parse the target...
-	var action = this.parseStringAction(target)
-
 	var meth = Action(alias, doc, null, 
 		{ alias: target }, 
 		function(){
+			// parse the target...
+			var action = meth._parsed = meth._parsed || this.parseStringAction(target)
+
 			var args = action.arguments.slice()
 
 			// XXX merge args...
