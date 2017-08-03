@@ -712,7 +712,7 @@ module.MetaActions = {
 	get aliases(){
 		var that = this
 		return this.actions
-			.filter(function(n){ return that[name] instanceof Alias }) },
+			.filter(function(n){ return that[n] instanceof Alias }) },
 
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
