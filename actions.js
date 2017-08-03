@@ -594,6 +594,41 @@ Action.prototype.chainCall = function(context, inner){
 
 //---------------------------------------------------------------------
 
+// XXX handle alias args and pass them to the target...
+var Alias =
+module.Alias =
+function Alias(alias, target){
+	// we got called without a 'new'...
+	if(this == null || this.constructor !== Alias){
+		// XXX using something like .apply(.., arguemnts) would be more
+		// 		generel but have no time to figure out how to pass it 
+		// 		to new without the later complaining...
+		return new Alias(alias, target)
+	}
+
+	var meth = Action(alias, doc, null, 
+		{ alias: target }, 
+		function(){
+			// XXX parse the target...
+			// XXX
+
+			// XXX merge args...
+			// XXX
+
+			// XXX call the alias...
+			// XXX
+		})
+	meth.__proto__ = this.__proto__
+
+	return meth
+}
+// inherit from Action...
+Alias.prototype.__proto__ = Action.prototype
+
+
+
+//---------------------------------------------------------------------
+
 // A base action-set object...
 //
 // This will define a set of action-set specific methods and helpers.
@@ -627,6 +662,16 @@ module.MetaActions = {
 		}
 		return res
 	},
+
+	// List aliases...
+	// XXX should the check be deep???
+	// 		...i.e. we can extend an alias with an action, does this make
+	// 		the extending action an alias???
+	get aliases(){
+		var that = this
+		return this.actions
+			.filter(function(n){ return that[name] instanceof Alias }) },
+
 
 	// Get action attribute...
 	//
