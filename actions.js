@@ -627,6 +627,8 @@ Action.prototype.chainCall = function(context, inner){
 
 //---------------------------------------------------------------------
 
+// XXX alias parsing is dependant on the action set, move this functionality
+// 		to the ActionSet.alias(..) method/action...
 // XXX handle alias args and pass them to the target...
 // XXX who's parsing and what syntax???
 // 		- args syntax???
@@ -641,11 +643,14 @@ function Alias(alias, target){
 		return new Alias(alias, target)
 	}
 
-	var meth = Action(alias, doc, null, 
+	// XXX would be good to pre-parse the target...
+	var meth = Action(alias, 
+		// XXX pre-parse the doc if possible...
+		null, null, 
 		{ alias: target }, 
 		function(){
 			// parse the target...
-			var action = meth._parsed = meth._parsed || this.parseStringAction(target)
+			var action = this.parseStringAction(target)
 
 			var args = action.arguments.slice()
 
