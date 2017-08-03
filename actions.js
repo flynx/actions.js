@@ -286,6 +286,39 @@ function(func){
 }
 
 
+// XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
+// 		in a logical manner...
+var parseStringAction =
+module.parseStringAction =
+function(txt){
+	// split off the doc...
+	var c = txt.split('--')
+	var doc = (c[1] || '').trim()
+	// the actual code...
+	c = c[0].split(':')
+
+	// action and no default flag...
+	var action = c[0].trim()
+	var no_default = action.slice(-1) == '!'
+	action = no_default ? action.slice(0, -1) : action
+
+	// parse arguments...
+	var args = JSON.parse('['+(
+		((c[1] || '')
+			.match(/"[^"]*"|'[^']*'|\{[^\}]*\}|\[[^\]]*\]|\d+|\d+\.\d*|null/gm) 
+		|| [])
+		.join(','))+']')
+
+	return {
+		action: action,
+		arguments: args,
+		doc: doc,
+		no_default: no_default,
+		stop_propagation: false,
+	}
+}
+
+
 
 /*********************************************************************/
 
@@ -595,6 +628,8 @@ Action.prototype.chainCall = function(context, inner){
 //---------------------------------------------------------------------
 
 // XXX handle alias args and pass them to the target...
+// XXX who's parsing and what syntax???
+// 		- args syntax???
 var Alias =
 module.Alias =
 function Alias(alias, target){
@@ -606,17 +641,19 @@ function Alias(alias, target){
 		return new Alias(alias, target)
 	}
 
+	// parse the target...
+	var action = this.parseStringAction(target)
+
 	var meth = Action(alias, doc, null, 
 		{ alias: target }, 
 		function(){
-			// XXX parse the target...
-			// XXX
+			var args = action.arguments.slice()
 
 			// XXX merge args...
 			// XXX
 
-			// XXX call the alias...
-			// XXX
+			// call the alias...
+			return this[action.action].apply(this, args)
 		})
 	meth.__proto__ = this.__proto__
 
@@ -671,6 +708,9 @@ module.MetaActions = {
 		var that = this
 		return this.actions
 			.filter(function(n){ return that[name] instanceof Alias }) },
+
+	// XXX move this to the right spot...
+	parseStringAction: parseStringAction,
 
 
 	// Get action attribute...
