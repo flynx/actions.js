@@ -643,15 +643,18 @@ function Alias(alias, target){
 		return new Alias(alias, target)
 	}
 
+	var parsed = typeof(target) == typeof('str') ? null : target
+	var doc = parsed ? parsed.doc : null
+
 	// XXX would be good to pre-parse the target...
 	var meth = Action(alias, 
 		// XXX pre-parse the doc if possible...
-		null, null, 
+		doc, null, 
 		{ alias: target }, 
 		function(){
 			// parse the target...
-			var action = this.parseStringAction(target)
-
+			// XXX should we cache here???
+			var action = parsed || this.parseStringAction(target)
 			var args = action.arguments.slice()
 
 			// XXX merge args...
@@ -716,6 +719,16 @@ module.MetaActions = {
 
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
+
+
+	// XXX should this prevent overriding stuff???
+	// XXX move to a better spot...
+	alias: Action('alias', function(alias, target){ 
+		var parsed = typeof(target) == typeof('str') ?
+			this.parseStringAction(target)
+			: target
+		this[alias] = Alias(alias, parsed)
+	}),
 
 
 	// Get action attribute...
@@ -1493,8 +1506,7 @@ module.MetaActions = {
 	// Remove a set of local mixed in actions from object...
 	//
 	mixoutFrom: function(to, options){
-		return this.mixout.call(to, this, options)
-	},
+		return this.mixout.call(to, this, options) },
 
 	// Create a child object...
 	//
