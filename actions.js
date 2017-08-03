@@ -315,6 +315,8 @@ function(txt){
 		doc: doc,
 		no_default: no_default,
 		stop_propagation: false,
+
+		code: txt,
 	}
 }
 
@@ -632,25 +634,41 @@ Action.prototype.chainCall = function(context, inner){
 // XXX handle alias args and pass them to the target...
 // XXX who's parsing and what syntax???
 // 		- args syntax???
+// XXX make this signature compatible with Action... (except for the last arg)
 var Alias =
 module.Alias =
-function Alias(alias, target){
+function Alias(alias, doc, ldoc, attrs, target){
 	// we got called without a 'new'...
 	if(this == null || this.constructor !== Alias){
 		// XXX using something like .apply(.., arguemnts) would be more
 		// 		generel but have no time to figure out how to pass it 
 		// 		to new without the later complaining...
-		return new Alias(alias, target)
+		return new Alias(alias, doc, ldoc, attrs, target)
 	}
 
+	// precess args...
+	var args = doc instanceof Array ? 
+		doc 
+		: [].slice.call(arguments)
+			.filter(function(e){ return e !== undefined })
+			.slice(1)
+	target = args.pop()
+	last = args[args.length-1]
+	attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
+	doc = typeof(args[0]) == typeof('str') ? args.shift() : null
+	ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
+
+	attrs.alias = target
+
 	var parsed = typeof(target) == typeof('str') ? null : target
-	var doc = parsed ? parsed.doc : null
+
+	doc = (!doc && parsed) ? parsed.doc : doc
 
 	// XXX would be good to pre-parse the target...
 	var meth = Action(alias, 
-		// XXX pre-parse the doc if possible...
-		doc, null, 
-		{ alias: target }, 
+		doc, 
+		null, 
+		attrs, 
 		function(){
 			// parse the target...
 			// XXX should we cache here???
@@ -664,6 +682,8 @@ function Alias(alias, target){
 			return this[action.action].apply(this, args)
 		})
 	meth.__proto__ = this.__proto__
+
+	meth.func.alias = target
 
 	return meth
 }
@@ -997,6 +1017,9 @@ module.MetaActions = {
 	// 			//		.pre or .post, this does not mean that one can
 	// 			//		not define both, just that they are stored separately
 	// 			pre|post: <handler>,
+	//
+	// 			// XXX
+	// 			alias: <target>,
 	// 		},
 	// 		...
 	// 	]
@@ -1579,7 +1602,14 @@ module.MetaActions = {
 					+ (cur.pre.source_tag ? 
 						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
 					// code...
-					+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
+					//+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
+					+ normalizeTabs(
+						!cur.pre.alias ? 
+							cur.pre.toString()
+						: typeof(cur.pre.alias) == typeof('str') ?
+							cur.pre.alias 
+						: cur.pre.alias.code
+					).replace(/\n/g, p)
 					+ p
 			}
 
