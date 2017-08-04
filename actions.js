@@ -791,10 +791,13 @@ module.MetaActions = {
 	//
 	// 	Set alias...
 	// 	.alias(alias, code)
+	// 	.alias(alias[, doc[, long-doc]][, attrs,] code)
+	// 	.alias(alias, [ [doc[, long-doc]][, attrs,] code ])
 	// 		-> action-set
 	//
 	// 	Remove alias...
 	// 	.alias(alias, null)
+	// 	.alias(alias, false)
 	// 		-> action-set
 	//
 	// code should be compatible with .parseStringAction(..)
@@ -807,7 +810,8 @@ module.MetaActions = {
 	// XXX move to a better spot...
 	alias: Action('alias', function(alias, target){ 
 		// remove alias...
-		if((target === false || target === null) 
+		if((arguments.length == 2
+				&& target === false || target === null) 
 				&& this[alias] instanceof Alias){
 			delete this[alias]
 
@@ -816,7 +820,7 @@ module.MetaActions = {
 			var parsed = typeof(target) == typeof('str') ?
 				this.parseStringAction(target)
 				: target
-			this[alias] = Alias(alias, parsed)
+			this[alias] = Alias.apply(null, arguments)
 		}
 	}),
 
