@@ -702,22 +702,23 @@ function Alias(alias, doc, ldoc, attrs, target){
 
 	doc = (!doc && parsed) ? parsed.doc : doc
 
-	var meth = Action(alias, 
-		doc, 
-		null, 
-		attrs, 
-		function(){
-			// parse the target...
-			// XXX should we cache here???
-			var action = parsed || this.parseStringAction(target)
-			var args = action.arguments.slice()
+	var func = function(){
+		// parse the target...
+		// XXX should we cache here???
+		var action = parsed || this.parseStringAction(target)
+		var args = action.arguments.slice()
 
-			// XXX merge args...
-			// XXX
+		// XXX merge args...
+		// XXX
 
-			// call the alias...
-			return this[action.action].apply(this, args)
-		})
+		// call the alias...
+		return this[action.action].apply(this, args)
+	}
+	func.toString = function(){ 
+		return meth.alias.code || meth.alias }
+
+	// make the action...
+	var meth = Action(alias, doc, null, attrs, func)
 	meth.__proto__ = this.__proto__
 
 	meth.func.alias = target
@@ -1664,7 +1665,8 @@ module.MetaActions = {
 					+ (cur.pre.source_tag ? 
 						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
 					// code...
-					//+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
+					+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
+					/*
 					+ normalizeTabs(
 						!cur.pre.alias ? 
 							cur.pre.toString()
@@ -1672,6 +1674,7 @@ module.MetaActions = {
 							cur.pre.alias 
 						: cur.pre.alias.code
 					).replace(/\n/g, p)
+					*/
 					+ p
 			}
 
