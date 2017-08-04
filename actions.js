@@ -667,6 +667,13 @@ Action.prototype.chainCall = function(context, inner){
 
 //---------------------------------------------------------------------
 
+// Action alias constructor...
+// 
+// This is signature compatible with Action(..) with one difference being 
+// that this expects the target to be a string compatible with 
+// .parseStringAction(..)...
+// 
+// XXX write docs...
 // XXX alias parsing is dependant on the action set, move this functionality
 // 		to the ActionSet.alias(..) method/action...
 // XXX handle alias args and pass them to the target...
@@ -1778,18 +1785,18 @@ object.makeConstructor('ActionSet', MetaActions)
 // 			<doc>,
 // 			<long-doc>,
 // 			<attrs>,
-// 			<function>
+// 			<function> | <alias-code>
 // 		],
 //
 // 		// short doc only...
 // 		<name> : [
 // 			<doc>,
-// 			<function>
+// 			<function> | <alias-code>
 // 		],
 //
 // 		// only the code...
 // 		<name> : [
-// 			<function>
+// 			<function> | <alias-code>
 // 		],
 // 		...
 // 	}
