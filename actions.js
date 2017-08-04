@@ -305,7 +305,30 @@ function(txt){
 	// parse arguments...
 	var args = JSON.parse('['+(
 		((c[1] || '')
-			.match(/"[^"]*"|'[^']*'|\{[^\}]*\}|\[[^\]]*\]|\d+|\d+\.\d*|null/gm) 
+			.match(RegExp([
+				// strings...
+				'"[^"]*"',
+				"'[^']*'",
+				'`[^`]*`',
+
+				// objects...
+				// XXX hack-ish...
+				'\\{[^\\}]*\\}',
+
+				// lists...
+				// XXX hack-ish...
+				'\\[[^\]]*\]',
+
+				// numbers...
+				'\\d+\\.\\d+|\\d+',
+
+				// identifiers...
+				// XXX not JSON compatible...
+				//'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
+
+				// null...
+				'null'
+			].join('|'), 'gm')) 
 		|| [])
 		.join(','))+']')
 
@@ -317,6 +340,21 @@ function(txt){
 		stop_propagation: false,
 
 		code: txt,
+	}
+}
+
+
+// XXX make this stricter...
+var isStringAction =
+module.isStringAction =
+function(txt){
+	try{
+		var parsed = typeof(txt) == typeof('str')
+			&& (this.parseStringAction || parseStringAction)(txt)
+		return parsed 
+			&& /[a-zA-Z_][a-zA-Z0-9_]*/.test(parsed.action)
+	} catch(e){
+		return false
 	}
 }
 
@@ -664,7 +702,6 @@ function Alias(alias, doc, ldoc, attrs, target){
 
 	doc = (!doc && parsed) ? parsed.doc : doc
 
-	// XXX would be good to pre-parse the target...
 	var meth = Action(alias, 
 		doc, 
 		null, 
@@ -737,17 +774,42 @@ module.MetaActions = {
 		return this.actions
 			.filter(function(n){ return that[n] instanceof Alias }) },
 
+
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
+	isStringAction: isStringAction,
 
-
+	// Set/remove action alias...
+	//
+	// 	Set alias...
+	// 	.alias(alias, code)
+	// 		-> action-set
+	//
+	// 	Remove alias...
+	// 	.alias(alias, null)
+	// 		-> action-set
+	//
+	// code should be compatible with .parseStringAction(..)
+	//
+	// NOTE: this does not check if it will override anything, so it is
+	// 		possible to override/delete an action/method/attribute with 
+	// 		this...
+	//
 	// XXX should this prevent overriding stuff???
 	// XXX move to a better spot...
 	alias: Action('alias', function(alias, target){ 
-		var parsed = typeof(target) == typeof('str') ?
-			this.parseStringAction(target)
-			: target
-		this[alias] = Alias(alias, parsed)
+		// remove alias...
+		if((target === false || target === null) 
+				&& this[alias] instanceof Alias){
+			delete this[alias]
+
+		// set alias...
+		} else {
+			var parsed = typeof(target) == typeof('str') ?
+				this.parseStringAction(target)
+				: target
+			this[alias] = Alias(alias, parsed)
+		}
 	}),
 
 
@@ -1746,6 +1808,15 @@ function Actions(a, b){
 	var proto = b == null ? b : a
 	obj = obj || new ActionSet()
 
+	if(proto != null){
+		obj.__proto__ = proto
+
+		// XXX is this the right way to go???
+		if(obj.config != null && proto.config != null){
+			obj.config.__proto__ = proto.config
+		}
+	}
+
 	// NOTE: this is intentionally done only for own attributes...
 	Object.keys(obj).forEach(function(k){
 		// NOTE: we are not getting the attrs directly (vars = obj[k])
@@ -1761,24 +1832,28 @@ function Actions(a, b){
 				// 		from node console instanceof tests fail...
 				//|| !(arg instanceof Array)
 				|| arg.constructor.name != 'Array'
-				// and arrays the last element of which is not a function...
-				|| typeof(arg[arg.length-1]) != 'function'){
+				// skip arrays where the last element of which is not a function...
 				//|| !(arg[arg.length-1] instanceof Function)){
+				// XXX EXPERIMENTAL...
+				// XXX for this to work we need obj to be an 
+				// 		instance of ActionSet...
+				// 		...need a way to check this yet not require obj
+				// 		to strictly be anything special, the problem is 
+				// 		that the string action syntax is defined in the 
+				// 		action-set, thus we need to know about it here...
+				|| !(arg[arg.length-1] instanceof Function
+					|| (typeof(arg[arg.length-1]) == typeof('str')
+						// XXX should this be stricter???
+						&& (obj.isStringAction || isStringAction)(arg[arg.length-1]))) ){
+				//*/
 			return
 		}
 
-		// create a new action...
-		var a = obj[k] = new Action(k, arg)
+		// create a new action/alias...
+		var a = obj[k] = arg[arg.length-1] instanceof Function ?
+			(new Action(k, arg))
+			: (new Alias(k, arg))
 	})
-
-	if(proto != null){
-		obj.__proto__ = proto
-
-		// XXX is this the right way to go???
-		if(obj.config != null && proto.config != null){
-			obj.config.__proto__ = proto.config
-		}
-	}
 
 	return obj
 }
