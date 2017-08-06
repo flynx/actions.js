@@ -83,6 +83,14 @@ module.UNDEFINED = ['undefined placeholder']
 // 		- post action handlers will get the root action result as first 
 // 		  argument succeeded by the action arguments.
 //
+//	Alias
+//		- an action created by Alias(..),
+//		- identical to an action with one key difference: instead of a 
+//		  function Alias(..) expects a string/code,
+//		- code syntax is configurable, defaulting to the defined by
+//		  parseActionCall(..)
+//		- aliases are designed to be defined and managed in runtime while
+//		  actions are mainly load-time entities.
 //
 //
 // The action system main protocols:
@@ -238,6 +246,40 @@ module.UNDEFINED = ['undefined placeholder']
 // 	NOTE: one should use this with extreme care as this will introduce 
 // 		an overhead on all the actions if not done carefully.
 //
+//
+//
+// Alias protocols:
+//
+// 1) Defining aliases in runtime (MetaActions)
+// 
+// 		<action-set>.alias('alias', 'action: args')
+// 		<action-set>.alias('alias', .., 'action: args')
+// 			-> <action-set>
+// 		
+// 	NOTE: .alias(..) is signature compatible to Action(..) / Alias(..),
+// 		supporting all the documentation and attribute definition.
+// 
+// 
+// 2) Deleting aliases in runtime (MetaActions)
+// 
+// 		<action-set>.alias('alias', null)
+// 		<action-set>.alias('alias', false)
+// 			-> <action-set>
+// 		
+// 	NOTE: only own aliases can be deleted via .alias(.., null|false)
+// 
+// 
+// 3) Documentation generation and introspection (MetaActions, Alias)
+//
+// 		Alias code...
+// 		<alias>.alias
+// 		<alias>.toString()
+// 			-> <code>
+// 			
+// 		List own aliases...
+// 		<action-set>.aliases
+// 			-> <action-set>
+// 			
 //
 //
 /*********************************************************************/
@@ -774,13 +816,14 @@ module.MetaActions = {
 	},
 
 	// List aliases...
-	// XXX should the check be deep???
-	// 		...i.e. we can extend an alias with an action, does this make
-	// 		the extending action an alias???
+	//
+	// NOTE: this will only show the aliases local to this.
 	get aliases(){
 		var that = this
 		return this.actions
-			.filter(function(n){ return that[n] instanceof Alias }) },
+			.filter(function(n){ 
+				return Object.hasOwnProperty(this, n)
+					&& that[n] instanceof Alias }) },
 
 
 	// XXX move this to the right spot...
