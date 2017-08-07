@@ -256,6 +256,9 @@ module.UNDEFINED = ['undefined placeholder']
 // 		<action-set>.alias('alias', .., 'action: args')
 // 			-> <action-set>
 // 		
+// 	To enable extending in runtime .alias(..) itself is implemented as 
+// 	an action, thus all action protocols also apply.
+// 		
 // 	NOTE: .alias(..) is signature compatible to Action(..) / Alias(..),
 // 		supporting all the documentation and attribute definition.
 // 
@@ -265,7 +268,7 @@ module.UNDEFINED = ['undefined placeholder']
 // 		<action-set>.alias('alias', null)
 // 		<action-set>.alias('alias', false)
 // 			-> <action-set>
-// 		
+// 			
 // 	NOTE: only own aliases can be deleted via .alias(.., null|false)
 // 
 // 
@@ -715,13 +718,9 @@ Action.prototype.chainCall = function(context, inner){
 // that this expects the target to be a string compatible with 
 // .parseStringAction(..)...
 // 
-// XXX write docs...
 // XXX alias parsing is dependant on the action set, move this functionality
 // 		to the ActionSet.alias(..) method/action...
 // XXX handle alias args and pass them to the target...
-// XXX who's parsing and what syntax???
-// 		- args syntax???
-// XXX make this signature compatible with Action... (except for the last arg)
 var Alias =
 module.Alias =
 function Alias(alias, doc, ldoc, attrs, target){
@@ -815,6 +814,7 @@ module.MetaActions = {
 		return res
 	},
 
+
 	// List aliases...
 	//
 	// NOTE: this will only show the aliases local to this.
@@ -824,7 +824,6 @@ module.MetaActions = {
 			.filter(function(n){ 
 				return Object.hasOwnProperty(this, n)
 					&& that[n] instanceof Alias }) },
-
 
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
