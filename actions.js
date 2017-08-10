@@ -751,6 +751,10 @@ function Alias(alias, doc, ldoc, attrs, target){
 	doc = (!doc && parsed) ? parsed.doc : doc
 
 	var func = function(){
+		// empty alias...
+		if(target == ''){
+			return
+		}
 		// parse the target...
 		// XXX should we cache here???
 		var action = parsed || this.parseStringAction(target)
@@ -766,7 +770,7 @@ function Alias(alias, doc, ldoc, attrs, target){
 		return meth.alias.code || meth.alias }
 
 	// make the action...
-	var meth = Action(alias, doc, null, attrs, func)
+	var meth = Action(alias, doc, ldoc, attrs, func)
 	meth.__proto__ = this.__proto__
 
 	meth.func.alias = target
@@ -822,7 +826,7 @@ module.MetaActions = {
 		var that = this
 		return this.actions
 			.filter(function(n){ 
-				return Object.hasOwnProperty(this, n)
+				return that.hasOwnProperty(n)
 					&& that[n] instanceof Alias }) },
 
 	// XXX move this to the right spot...
@@ -1899,8 +1903,9 @@ function Actions(a, b){
 				// 		action-set, thus we need to know about it here...
 				|| !(arg[arg.length-1] instanceof Function
 					|| (typeof(arg[arg.length-1]) == typeof('str')
+						&& (arg[arg.length-1] == ''
 						// XXX should this be stricter???
-						&& (obj.isStringAction || isStringAction)(arg[arg.length-1]))) ){
+							|| (obj.isStringAction || isStringAction)(arg[arg.length-1])))) ){
 				//*/
 			return
 		}
