@@ -873,6 +873,13 @@ module.MetaActions = {
 
 	// Get action attribute...
 	//
+	// Attribute search order (return first matching):
+	// 	- Local action
+	// 	- Local action.function (.func)
+	// 	- repeat for .__proto__ (until top of MRO)
+	// 	- repeat for '__call__' special action (XXX EXPERIMENTAL)
+	//
+	//
 	// NOTE: this will get attribute set both on the action object and 
 	// 		the action function, this covers two usecases:
 	// 		1) action constructor attributes...
@@ -889,6 +896,9 @@ module.MetaActions = {
 	//			...
 	// 			someAction: ['...',
 	// 				modifyAction(function(){ ... })],
+	//
+	// XXX document...
+	// XXX add option to to enable/disable look in .__call__... 
 	getActionAttr: function(action, attr){
 		var cur = this
 
@@ -905,6 +915,11 @@ module.MetaActions = {
 				}
 			}
 			cur = cur.__proto__
+		}
+
+		// search .__call__ action...
+		if(action != '__call__'){
+			return this.getActionAttr('__call__', attr)
 		}
 	},
 
