@@ -918,7 +918,7 @@ module.MetaActions = {
 		}
 
 		// search .__call__ action...
-		if(action != '__call__'){
+		if(cur[action] != null && action != '__call__'){
 			return this.getActionAttr('__call__', attr)
 		}
 	},
