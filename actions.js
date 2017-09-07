@@ -143,6 +143,8 @@ module.UNDEFINED = ['undefined placeholder']
 //		but is implicit, and not dependant on the original containing 
 //		object name/reference ('O'), thus enabling an action to be 
 //		referenced and called from any object and still chain correctly.
+//	NOTE: if a normal method is encountered in the inheritance chain, it
+//		will shadow all the actions beyond it.
 //
 //
 //
@@ -245,6 +247,10 @@ module.UNDEFINED = ['undefined placeholder']
 // 		XXX need a way to prevent this...
 // 	NOTE: one should use this with extreme care as this will introduce 
 // 		an overhead on all the actions if not done carefully.
+//
+//
+// 4) Action attributes
+//	XXX
 //
 //
 //
@@ -1528,15 +1534,15 @@ module.MetaActions = {
 				prop.configurable = true
 				Object.defineProperty(that, k, prop)
 
-
 			// actions and other attributes...
 			} else {
 				var attr = from[k]
 				if(all_attr_types 
-						//|| attr instanceof Function
+						|| attr instanceof Function
 						|| attr instanceof Action){
 					that[k] = attr
 				}
+
 				// source tag actions...
 				if(source_tag && attr instanceof Action){
 					// existing tag...
