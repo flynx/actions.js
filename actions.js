@@ -1127,9 +1127,18 @@ module.MetaActions = {
 			// get the overloading action...
 			// NOTE: this will get all the handlers including the root 
 			// 		and the current handlers...
-			// NOTE: this will ignore "shadows" that are not actions...
-			if(cur.hasOwnProperty(name) && cur[name] instanceof Action){
-				handlers.push(cur[name].func)
+			// NOTE: if this encounters a matching mormal method/function 
+			// 		this will not search beyond it.
+			if(cur.hasOwnProperty(name)){
+				// action -> collect...
+				if(cur[name] instanceof Action){
+					handlers.push(cur[name].func)
+
+				// function -> terminate chain...
+				} else if(cur[name] instanceof Function){
+					handlers.push(cur[name])
+					break
+				}
 			}
 
 			cur = cur.__proto__
@@ -1876,6 +1885,7 @@ object.makeConstructor('ActionSet', MetaActions)
 //
 // XXX add doc, ldoc, tags and save them to each action...
 // XXX is .config processing correct here???
+// XXX do we need to handle methods in a special way???
 var Actions =
 module.Actions =
 function Actions(a, b){
@@ -1901,34 +1911,17 @@ function Actions(a, b){
 		// 		be included as-is...
 		var arg = Object.getOwnPropertyDescriptor(obj, k).value
 
-		// skip non-arrays...
-		if(arg == null 
-				// XXX node?: for some magical reason when running this 
-				// 		from node console instanceof tests fail...
-				//|| !(arg instanceof Array)
-				|| arg.constructor.name != 'Array'
-				// skip arrays where the last element of which is not a function...
-				//|| !(arg[arg.length-1] instanceof Function)){
-				// XXX EXPERIMENTAL...
-				// XXX for this to work we need obj to be an 
-				// 		instance of ActionSet...
-				// 		...need a way to check this yet not require obj
-				// 		to strictly be anything special, the problem is 
-				// 		that the string action syntax is defined in the 
-				// 		action-set, thus we need to know about it here...
-				|| !(arg[arg.length-1] instanceof Function
+		// action/alias...
+		if(arg instanceof Array 
+				&& (arg[arg.length-1] instanceof Function
 					|| (typeof(arg[arg.length-1]) == typeof('str')
 						&& (arg[arg.length-1] == ''
-						// XXX should this be stricter???
+							// XXX should this be stricter???
 							|| (obj.isStringAction || isStringAction)(arg[arg.length-1])))) ){
-				//*/
-			return
+			obj[k] = arg[arg.length-1] instanceof Function ?
+				(new Action(k, arg))
+				: (new Alias(k, arg))
 		}
-
-		// create a new action/alias...
-		var a = obj[k] = arg[arg.length-1] instanceof Function ?
-			(new Action(k, arg))
-			: (new Alias(k, arg))
 	})
 
 	return obj
