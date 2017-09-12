@@ -279,6 +279,17 @@ action_set.on('action_name.pre', function(){
   argument succeeded by the action arguments.
 
 
+**Alias**
+
+- an action created by `Alias(..)`,
+- identical to an action with one key difference: instead of a 
+  function `Alias(..)` expects a string/code,
+- code syntax is configurable, defaulting to the defined by
+  `parseActionCall(..)`,
+- aliases are designed to be defined and managed in runtime while
+  actions are mainly load-time entities.
+
+
 
 ### The action system main protocols:
 
@@ -447,6 +458,59 @@ _action_ is build-in.
     handler as that will result in infinite recursion.  
   - one should use this with extreme care as this will introduce 
     an overhead on all the actions if not done carefully.
+
+
+4. Action attributes
+
+  XXX
+
+
+
+### Alias protocols:
+
+1. Defining aliases in runtime (MetaActions)
+
+  ```
+  <action-set>.alias('alias', 'action: args')
+  <action-set>.alias('alias', .., 'action: args')
+    -> <action-set>
+  ```
+		
+  To enable extending in runtime .alias(..) itself is implemented as 
+  an action, thus all action protocols also apply.
+	
+  **Notes:** 
+  - .alias(..) is signature compatible to Action(..) / Alias(..),
+	supporting all the documentation and attribute definition.
+
+
+2. Deleting aliases in runtime (MetaActions)
+
+  ```
+  <action-set>.alias('alias', null)
+  <action-set>.alias('alias', false)
+    -> <action-set>
+  ```
+  			
+  **Notes:**
+  - only own aliases can be deleted via .alias(.., null|false)
+
+
+3. Documentation generation and introspection (MetaActions, Alias)
+
+  Alias code...
+  ```
+  <alias>.alias
+  <alias>.toString()
+    -> <code>
+  ```
+
+  List own aliases...
+  ```
+  <action-set>.aliases
+    -> <action-set>
+  ```
+			
 
 
 XXX need docs on mix(..) and .mix*(..) protocols...
