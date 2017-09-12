@@ -281,6 +281,17 @@ action_set.on('action_name.pre', function(){
 
 **Alias**
 
+```javascript
+    // ...
+
+    fullAlias: ['Alias to .full(..) action...',
+        'This alias will call the .full(..) action and pass it a couple of arguments',
+		// the alias code...
+        'full: "argument" 1'],
+
+    // ...
+```
+
 - an action created by `Alias(..)`,
 - identical to an action with one key difference: instead of a 
   function `Alias(..)` expects a string/code,
@@ -289,6 +300,8 @@ action_set.on('action_name.pre', function(){
 - aliases are designed to be defined and managed in runtime while
   actions are mainly load-time entities.
 
+
+XXX add doc about the code format...
 
 
 ### The action system main protocols:
