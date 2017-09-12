@@ -15,10 +15,10 @@ Here is a trivial use-case to illustrate the motivation for this tool set:
 
 ```javascript
 var N = {
-  times: function(n){
-    this.value *= n
-    return this
-  }
+    times: function(n){
+        this.value *= n
+        return this
+    }
 }
 
 var n = Object.create(N)
@@ -26,8 +26,8 @@ var n = Object.create(N)
 n.value = 3
 
 n
-  .times(3)
-  .times(2)
+    .times(3)
+    .times(2)
 
 ```
 
@@ -35,12 +35,12 @@ To extend this object we'll need to:
 
 ```javascript
 n.times = function(n){
-  console.log(this.value, 'times', n)
+    console.log(this.value, 'times', n)
 
-  var res = N.times.call(this, n)
+    var res = N.times.call(this, n)
 
-  console.log('    ->', this.value)
-  return res
+    console.log('    ->', this.value)
+    return res
 }
 
 ```
@@ -67,21 +67,21 @@ abstract this...
 
 ```javascript
 var N = Actions({
-  // Notice the brackets around the function...
-  times: [function(n){
-    this.value *= n
-  }]
+    // Notice the brackets around the function...
+    times: [function(n){
+        this.value *= n
+    }]
 })
 
 // Now we extend .times(..)
 var ExtendedN = Actions({
-  times: [function(n){
-    console.log(this.value, 'times', n)
+    times: [function(n){
+        console.log(this.value, 'times', n)
 
-    return function(){
-      console.log('    ->', this.value)
-    }
-  }]
+        return function(){
+            console.log('    ->', this.value)
+        }
+    }]
 })
 
 ```
@@ -95,8 +95,8 @@ var n = mix(N, ExtendedN) // or Object.create(N) or Object.create(ExtendedN)...
 n.value = 3
 
 n
-  .times(3)
-  .times(2)
+    .times(3)
+    .times(2)
 ```
 
 - `this` is returned automatically enabling us to chain calls to `.times(..)`
@@ -167,15 +167,15 @@ n
 var empty_full = new ActionSet()
 
 var minimal = Actions({
-  // action and prop definitions...
+    // action and prop definitions...
 })
 
 var full = Actions(ActionSet(), {
-  // ...
+    // ...
 })
 
 var inherited = Actions(full, {
-  // ...
+    // ...
 })
 ```
 
@@ -189,26 +189,26 @@ var inherited = Actions(full, {
 
 Defined inside an action-set:
 ```javascript
-  // ...
-
-  minimal: [function(){
     // ...
-  }],
 
-  full: ['Short info string',
-    'Long documentation string, describing the action (optional)',
-    function(){
-      // pre code
-      //    run before the parent action...
-
-      return function(res){
-        // post code
-        //     run after the parent action or directly after 
-        //     the pre-code of this is the root action...
-      }
+    minimal: [function(){
+        // ...
     }],
 
-  // ...
+    full: ['Short info string',
+        'Long documentation string, describing the action (optional)',
+        function(){
+            // pre code
+            //    run before the parent action...
+    
+            return function(res){
+                // post code
+                //     run after the parent action or directly after 
+                //     the pre-code of this is the root action...
+            }
+        }],
+
+    // ...
 ```
 
 
@@ -253,16 +253,16 @@ When `action_set` object is inherited from a `ActionSet` object or
 from `MetaActions`:
 ```javascript
 action_set.on('action_name', function(){
-  // post code...
+    // post code...
 })
 
 action_set.on('action_name.post', function(){
-  // post code...
+    // post code...
 })
 
 
 action_set.on('action_name.pre', function(){
-  // pre code...
+    // pre code...
 })
 ```
 
@@ -334,15 +334,15 @@ _action_ is build-in.
   ```javascript
   // Actions...
   var X = Actions({
-    m: [function(){ console.log('m') }]
+      m: [function(){ console.log('m') }]
   })
   var O = Actions(X, {
-    m: [function(){
-      console.log('pre')
-      return function(res){
-        console.log('post')
-      }
-    }]
+      m: [function(){
+          console.log('pre')
+          return function(res){
+              console.log('post')
+          }
+      }]
   })
   ```
 
@@ -362,13 +362,13 @@ _action_ is build-in.
   ```
   <action>.pre(<context>)
   <action>.pre(<context>, [<arg>, ..])
-    -> <call-data>
+      -> <call-data>
   ```
 
   Post phase...
   ```
   <action>.post(<context>, <call-data>)
-    -> <result>
+      -> <result>
   ```
 
   This is internally used to implement the action call as well as the
@@ -396,11 +396,11 @@ _action_ is build-in.
 
   ```javascript
   actionSet.someAction.chainApply(actionsSet, 
-    function(){
-      // this gets run between someAction's pre and post 
-      // stages...
-    }, 
-    args)
+      function(){
+          // this gets run between someAction's pre and post 
+          // stages...
+      }, 
+      args)
   ```
 
   This is intended to implement protocols where a single action is
@@ -414,15 +414,15 @@ _action_ is build-in.
 
   // Implementation actions (inner)...
   implementationAction1: [function(){
-    return this.protocolAction.chainApply(this, function(){
-      // ...
-    }, ..)
+      return this.protocolAction.chainApply(this, function(){
+          // ...
+      }, ..)
   }]
 
   implementationAction2: [function(){
-    return this.protocolAction.chainApply(this, function(){
-      // ...
-    }, ..)
+      return this.protocolAction.chainApply(this, function(){
+          // ...
+      }, ..)
   }]
   ```
 
@@ -473,14 +473,14 @@ _action_ is build-in.
   ```
   <action-set>.alias('alias', 'action: args')
   <action-set>.alias('alias', .., 'action: args')
-    -> <action-set>
+      -> <action-set>
   ```
 		
   To enable extending in runtime .alias(..) itself is implemented as 
   an action, thus all action protocols also apply.
 	
   **Notes:** 
-  - .alias(..) is signature compatible to Action(..) / Alias(..),
+  - `.alias(..)` is signature compatible to `Action(..)` / `Alias(..)`,
 	supporting all the documentation and attribute definition.
 
 
@@ -489,7 +489,7 @@ _action_ is build-in.
   ```
   <action-set>.alias('alias', null)
   <action-set>.alias('alias', false)
-    -> <action-set>
+      -> <action-set>
   ```
   			
   **Notes:**
@@ -502,13 +502,13 @@ _action_ is build-in.
   ```
   <alias>.alias
   <alias>.toString()
-    -> <code>
+      -> <code>
   ```
 
   List own aliases...
   ```
   <action-set>.aliases
-    -> <action-set>
+      -> <action-set>
   ```
 			
 
