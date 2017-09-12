@@ -141,8 +141,8 @@ n
   are ignored
 - **No state transferred via mixin**  
   The only two things _inherited_ from the object defining the actions 
-  via the mixin methods or `mix` function are properties and actions, 
-  all data, including normal methods is discarded.  
+  via the mixin methods or `mix` function are properties and methods/actions, 
+  all data is discarded.  
 
 
 **Notes:**
