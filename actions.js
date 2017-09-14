@@ -21,6 +21,8 @@ module.UNDEFINED = ['undefined placeholder']
 
 
 /*********************************************************************/
+// XXX should we maintain two sets of docs, here and in README.md???
+// 
 // Actions
 //
 // Actions are an extension to the JavaScript object model tailored for
