@@ -239,6 +239,9 @@ Root Action                             o---|---x
     - there is no distinction between root and other actions
 		  other than that root action's return values are not 
 		  ignored.
+- if the root action returns a `Promise`, the post phase is run 
+  when that promise is resolved or rejected. This can be disabled by 
+  setting the 'await' action attribute to `false` (default: `true`).
 - an action can consist of two parts: the first is called before the 
   next action in chain (_pre-callback_) and the second after (_post-callback_).
 - post-callback has access to the return value and can modify it
@@ -477,6 +480,13 @@ _action_ is build-in.
 
   XXX
 
+  ```
+  <action-set>.getActionAttr('action', 'attr')
+      -> <value>
+
+  <action-set>.getRootActionAttr('action', 'attr')
+      -> <value>
+  ```
 
 
 ### Alias protocols:

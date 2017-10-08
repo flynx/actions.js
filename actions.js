@@ -65,6 +65,10 @@ module.UNDEFINED = ['undefined placeholder']
 // 		  NOTE: there is no distinction between root and other actions
 // 		  		other than that root action's return values are not 
 // 		  		ignored.
+// 		- if the root action returns a Promise, the post phase is run 
+// 		  when that promise is resolved or rejected.
+// 		  This can be disabled by setting the 'await' action attribute
+// 		  to false (default: true).
 // 		- can consist of two parts: the first is called before the 
 // 		  shadowed action (pre-callback) and the second after (post-callback).
 // 		- post-callback has access to the return value and can modify it
@@ -463,6 +467,10 @@ function(txt){
 //
 // 	- an action will return the deepest (root) action's return, if that 
 // 	  return is undefined, then the action set is returned instead.
+// 	  If the root action returns a Promise, then the post phase will be 
+// 	  triggerd AFTER that promise is resolved or rejected, this can be 
+// 	  disabled by setting the 'await' action attribute to false (see:
+// 	  Action.prototype.await for details)
 //
 // 	- action arguments are "threaded" through the action chain down and 
 // 	  root action return value and arguments are threaded back up the 
@@ -563,6 +571,10 @@ Action.prototype.__proto__ = Function
 //
 // NOTE: All the defaults should be handled by the pre stage, post will 
 // 		process data assuming that it is correct.
+// NOTE: .post(..) will not wait for returned promises to resolve, use 
+// 		.chainApply(..) / ,chainCall(..) instead, or handle .result 
+// 		manually...
+// 		(see: Action.prototype.chainApply(..))
 //
 // XXX revise the structure....
 // 		...is it a better idea to define action methods in an object 
@@ -677,6 +689,28 @@ Action.prototype.post = function(context, data){
 	return res
 }
 
+
+// Control how an action handles returned promises...
+// 
+// Possible values:
+// 	true	- if an action returns a promise then trigger the post phase
+// 				after that promise is resolved / rejected... (default)
+// 	false	- handle promises like any other returned value.
+// 	
+// 	
+// NOTE: .await is only checked in the root action, thus it can not be 
+// 		overloaded by extending actions.
+// 		This is done intentionally, as the action actually returning a 
+// 		value (and defining the signature) is the only one responsible 
+// 		for controlling how it's handled.
+// 	
+// For implmentation see: Action.prototype.chainApply(..)
+// 
+// XXX should we be able to set this in the context???
+// XXX can we use 'await'???
+Action.prototype.await = true
+
+
 // Chaining...
 // 
 // For docs see: MetaActions.chainApply(..) and the base module doc.
@@ -708,6 +742,19 @@ Action.prototype.chainApply = function(context, inner, args){
 		} else if(res !== undefined){
 			data.result = res
 		}
+	}
+
+	// returned promise -> await for resolve/error...
+	// XXX should we be able to set this in the context???
+	if(data.result instanceof Promise
+			&& (context.getRootActionAttr || ActionSet.getRootActionAttr)
+				.call(context, this.name, 'await') ){
+		var that = this
+		return data.result
+			.then(function(){
+				return that.post(context, data) })
+			.catch(function(){
+				return that.post(context, data) })
 	}
 
 	return this.post(context, data)
@@ -928,6 +975,35 @@ module.MetaActions = {
 		// search .__call__ action...
 		if(cur[action] != null && action != '__call__'){
 			return this.getActionAttr('__call__', attr)
+		}
+	},
+
+	// Get root action attribute value...
+	//
+	// This is similar to .getActionAttr(..) but will only chenck the 
+	// root action for the attribute...
+	//
+	// NOTE: if an attr is not explicitly defined in the root action, the
+	// 		base Action object is checked (Action.prototype.await)...
+	getRootActionAttr: function(action, attr){
+		var cur = this
+
+		// go up the proto chain...
+		while(cur.__proto__ != null){
+			if(cur[action] != null){
+				var target = cur
+			}
+			cur = cur.__proto__
+		}
+
+		// attribute of action...
+		if(target[action][attr] !== undefined){
+			return target[action][attr]
+
+		// attribute of action function...
+		} else if(target[action].func 
+				&& target[action].func[attr] !== undefined){
+			return target[action].func[attr]
 		}
 	},
 
