@@ -738,7 +738,7 @@ Action.prototype.chainApply = function(context, inner, args){
 			res.apply(context, [context].concat(args))
 			data.result = context
 
-		// push the inner result into the chian...
+		// push the inner result into the chain...
 		} else if(res !== undefined){
 			data.result = res
 		}
@@ -1514,7 +1514,7 @@ module.MetaActions = {
 	// 		see that value.
 	// NOTE: these call the action's .chainApply(..) and .chainCall(..)
 	// 		methods, thus is not compatible with non-action methods...
-	// NOTE: .chianCall('action', ..) is equivalent to .action.chianCall(..)
+	// NOTE: .chainCall('action', ..) is equivalent to .action.chainCall(..)
 	chainApply: function(outer, inner, args){
 		return this[outer].chainApply(this, inner, args) },
 	chainCall: function(outer, inner){
@@ -1737,7 +1737,7 @@ module.MetaActions = {
 
 	// This is similar in effect but different in mechanics to .inlineMixout(..)
 	//
-	// This will find and remove a mixin object from the inheritance chian.
+	// This will find and remove a mixin object from the inheritance chain.
 	//
 	// NOTE: this will remove only the first occurance of a mixin.
 	mixout: function(from){
