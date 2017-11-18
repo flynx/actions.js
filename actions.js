@@ -343,11 +343,13 @@ function(func){
 }
 
 
+// NOTE: identifiers are resolved as attributes of the context...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
 // 		in a logical manner...
 var parseStringAction =
 module.parseStringAction =
-function(txt){
+function(txt, context){
+	context = context || this
 	// split off the doc...
 	var c = txt.split('--')
 	var doc = (c[1] || '').trim()
@@ -360,8 +362,7 @@ function(txt){
 	action = no_default ? action.slice(0, -1) : action
 
 	// parse arguments...
-	var args = JSON.parse('['+(
-		((c[1] || '')
+	var args = ((c[1] || '')
 			.match(RegExp([
 				// strings...
 				'"[^"]*"',
@@ -380,14 +381,16 @@ function(txt){
 				'\\d+\\.\\d+|\\d+',
 
 				// identifiers...
-				// XXX not JSON compatible...
-				//'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
+				'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
 
 				// null...
 				'null'
 			].join('|'), 'gm')) 
 		|| [])
-		.join(','))+']')
+		.map(function(e){
+			return /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
+				context[e]
+				: JSON.parse(e) })
 
 	return {
 		action: action,
