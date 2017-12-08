@@ -912,7 +912,7 @@ module.MetaActions = {
 	//
 	// XXX should this prevent overriding stuff???
 	// XXX move to a better spot...
-	alias: Action('alias', function(alias, target){ 
+	alias: Action('alias', function(alias, target){
 		// remove alias...
 		if((arguments.length == 2
 				&& target === false || target === null) 
@@ -1687,8 +1687,7 @@ module.MetaActions = {
 	//
 	// XXX this will not work on non-actions...
 	mixinTo: function(to, options){
-		return this.mixin.call(to, this, options)
-	},
+		return this.mixin.call(to, this, options) },
 
 	// Remove mixed in actions from this...
 	//
