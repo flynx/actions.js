@@ -343,13 +343,36 @@ function(func){
 }
 
 
+// 
+// Syntax:
+// 		ALIAS ::= 
+// 			<action-name>
+// 			| <action-name>: <args>
+// 			| <action-name>: <args> <comment>
+// 		<args> ::=
+// 			<arg>
+// 			| <arg> <args>
+// 		<arg> ::=
+// 			Number|String|Array|Object
+// 			IDENTIFIER
+// 			| ...
+// 			| '$[0-9]'
+// 		<comment> ::=
+// 			'--.*$'
+// 			
+// 	Special args:
+// 		IDENTIFIER
+// 				- expanded to context[IDENTIFIER]
+// 		$N		- expanded to and instance of parseStringAction.Argument
+// 		...		- expanded to parseStringAction.ALLARGS (singleton)
+// 			
+// 		
 // NOTE: identifiers are resolved as attributes of the context...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
 // 		in a logical manner...
 var parseStringAction =
 module.parseStringAction =
-function(txt, context){
-	context = context || this
+function(txt){
 	// split off the doc...
 	var c = txt.split('--')
 	var doc = (c[1] || '').trim()
@@ -395,11 +418,11 @@ function(txt, context){
 			return /^\.\.\.$/.test(e) ?
 					parseStringAction.ALLARGS
 				: /^\$[a-zA-Z0-9$@#_]*$/.test(e) ?
-					new StringActionArgument(e.slice(1))
-				// context idetifiers...
+					new parseStringAction.Argument(e.slice(1))
+				// idetifiers...
 				// NOTE: keep this last as it is the most general...
 				: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
-					context[e]
+					new parseStringAction.Identifier(e)
 				: JSON.parse(e) })
 
 	return {
@@ -413,17 +436,25 @@ function(txt, context){
 	}
 }
 
-StringActionArgument =
-parseStringAction.StringActionArgument = 
+parseStringAction.Identifier = 
 object.makeConstructor(
-	'StringActionArgument', 
+	'Identifier', 
 	{
 		__init__: function(value){
 			this.value = value
 		},
 		valueOf: function(){ return this.value },
 	})
-parseStringAction.ALLARGS = new StringActionArgument('...')
+parseStringAction.Argument = 
+object.makeConstructor(
+	'Argument', 
+	{
+		__init__: function(value){
+			this.value = value
+		},
+		valueOf: function(){ return this.value },
+	})
+parseStringAction.ALLARGS = new parseStringAction.Argument('...')
 
 
 // XXX make this stricter...
@@ -798,6 +829,12 @@ Action.prototype.chainCall = function(context, inner){
 // that this expects the target to be a string compatible with 
 // .parseStringAction(..)...
 // 
+// This will resolve special alias args:
+// 		name	-> parseStringAction.Identifier(name)	-> this[name]
+// 		$N		-> parseStringAction.Argument(N)		-> arguments[n]
+// 		...		-> parseStringAction.ALLARGS			-> arguments
+// 	
+// 
 // XXX alias parsing is dependant on the action set, move this functionality
 // 		to the ActionSet.alias(..) method/action...
 // XXX handle alias args and pass them to the target...
@@ -847,13 +884,15 @@ function Alias(alias, doc, ldoc, attrs, target){
 		var args = action.arguments.slice()
 			// merge args...
 			.map(function(arg, i){
-				return arg instanceof that.parseStringAction.StringActionArgument ?
+				return arg instanceof that.parseStringAction.Argument ?
 					(arg === that.parseStringAction.ALLARGS ?
 						(function(){
 							rest = i
 							return arg
 						})()
 						: in_args[parseInt(arg.value)])
+					: arg instanceof that.parseStringAction.Identifier ?
+						that[arg.value]
 					: arg })
 		rest != null
 			&& args.splice(rest, 1, ...in_args)
