@@ -383,13 +383,23 @@ function(txt, context){
 				// identifiers...
 				'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
 
+				// rest args...
+				'\\.\\.\\.',
+
 				// null...
-				'null'
+				'null',
 			].join('|'), 'gm')) 
 		|| [])
 		.map(function(e){
-			return /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
-				context[e]
+			// argument placeholder...
+			return /^\.\.\.$/.test(e) ?
+					parseStringAction.ALLARGS
+				: /^\$[a-zA-Z0-9$@#_]*$/.test(e) ?
+					new StringActionArgument(e.slice(1))
+				// context idetifiers...
+				// NOTE: keep this last as it is the most general...
+				: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
+					context[e]
 				: JSON.parse(e) })
 
 	return {
@@ -402,6 +412,18 @@ function(txt, context){
 		code: txt,
 	}
 }
+
+StringActionArgument =
+parseStringAction.StringActionArgument = 
+object.makeConstructor(
+	'StringActionArgument', 
+	{
+		__init__: function(value){
+			this.value = value
+		},
+		valueOf: function(){ return this.value },
+	})
+parseStringAction.ALLARGS = new StringActionArgument('...')
 
 
 // XXX make this stricter...
@@ -813,16 +835,36 @@ function Alias(alias, doc, ldoc, attrs, target){
 		if(target == ''){
 			return
 		}
+		var that = this
+		var in_args = [].slice.call(arguments)
+
 		// parse the target...
 		// XXX should we cache here???
 		var action = parsed || this.parseStringAction(target)
+
+		// handle args...
+		var rest
 		var args = action.arguments.slice()
+			// merge args...
+			.map(function(arg, i){
+				return arg instanceof that.parseStringAction.StringActionArgument ?
+					(arg === that.parseStringAction.ALLARGS ?
+						(function(){
+							rest = i
+							return arg
+						})()
+						: in_args[parseInt(arg.value)])
+					: arg })
+		rest != null
+			&& args.splice(rest, 1, ...in_args)
 
-		// XXX merge args...
-		// XXX
+		if(this[action.action] instanceof Function){
+			// call the alias...
+			return this[action.action].apply(this, args)
+		}
 
-		// call the alias...
-		return this[action.action].apply(this, args)
+		// error...
+		console.error(`${alias}: alias to unknown action: ${action.action}`)
 	}
 	func.toString = function(){ 
 		return meth.alias.code || meth.alias }
