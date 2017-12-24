@@ -366,6 +366,17 @@ function(func){
 // 		$N		- expanded to and instance of parseStringAction.Argument
 // 		...		- expanded to parseStringAction.ALLARGS (singleton)
 // 			
+// 			
+// 	Returns:
+//		{
+//			action: action,
+//			arguments: args,
+//			doc: doc,
+//			no_default: no_default,
+//			stop_propagation: false,
+//
+//			code: txt,
+//		}
 // 		
 // NOTE: identifiers are resolved as attributes of the context...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
@@ -1014,7 +1025,8 @@ module.MetaActions = {
 	//
 	// Attribute search order (return first matching):
 	// 	- Local action
-	// 	- Local action.function (.func)
+	// 	- Local action function (.func)
+	// 	- if an alias look in the target...
 	// 	- repeat for .__proto__ (until top of MRO)
 	// 	- repeat for '__call__' special action (XXX EXPERIMENTAL)
 	//
@@ -1051,6 +1063,15 @@ module.MetaActions = {
 				// attribute of action function...
 				} else if(cur[action].func && cur[action].func[attr] !== undefined){
 					return cur[action].func[attr]
+
+				// alias -> look in the target action...
+				} else if(cur[action] instanceof Alias){
+					var res = this.getActionAttr(
+						this.parseStringAction(cur[action].alias).action, 
+						attr)
+					if(res !== undefined){
+						return res
+					}
 				}
 			}
 			cur = cur.__proto__
