@@ -490,7 +490,9 @@ parseStringAction.resolveArgs = function(context, action_args, call_args){
 	return args
 }
 parseStringAction.callAction = function(context, action, ...args){
-	var action = this(action)
+	action = typeof(action) == typeof('str') ? 
+		this(action) 
+		: action
 	return context[action.action]
 		.apply(context, this.resolveArgs(context, action.arguments, args))
 }
@@ -917,11 +919,13 @@ function Alias(alias, doc, ldoc, attrs, target){
 		var that = this
 		var in_args = [].slice.call(arguments)
 
-		// parse the target...
+		// XXX handle errors...
+		this.parseStringAction.callAction(this, parsed || target, in_args)
+
+		/*/ parse the target...
 		// XXX should we cache here???
 		var action = parsed || this.parseStringAction(target)
 
-		// XXX use that.parseStringAction.call(this, target, in_args)
 		if(this[action.action] instanceof Function){
 			// handle args...
 			var args = that.parseStringAction.resolveArgs(that, action.arguments, in_args)
@@ -932,6 +936,7 @@ function Alias(alias, doc, ldoc, attrs, target){
 
 		// error...
 		console.error(`${alias}: alias to unknown action: ${action.action}`)
+		//*/
 	}
 	func.toString = function(){ 
 		return meth.alias.code || meth.alias }
