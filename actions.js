@@ -467,6 +467,36 @@ object.makeConstructor(
 	})
 parseStringAction.ALLARGS = new parseStringAction.Argument('...')
 
+parseStringAction.resolveArgs = function(context, action_args, call_args){
+	var that = this
+	var rest
+	var args = [].slice.call(action_args)
+		// merge args...
+		.map(function(arg, i){
+			return arg instanceof that.Argument ?
+				(arg === that.ALLARGS ?
+					(function(){
+						rest = i
+						return arg
+					})()
+					: call_args[parseInt(arg.value)])
+				// resolve idents...
+				: arg instanceof that.Identifier ?
+					context[arg.value]
+				: arg })
+	rest != null
+		&& args.splice(rest, 1, ...call_args)
+
+	return args
+}
+parseStringAction.callAction = function(context, action, ...args){
+	var action = this(action)
+	return context[action.action]
+		.apply(context, this.resolveArgs(context, action.arguments, args))
+}
+parseStringAction.applyAction = function(context, action, args){
+	return this.callAction(context, action, ...args) }
+
 
 // XXX make this stricter...
 var isStringAction =
@@ -878,6 +908,7 @@ function Alias(alias, doc, ldoc, attrs, target){
 
 	doc = (!doc && parsed) ? parsed.doc : doc
 
+	// XXX use parseStringAction.call(..)
 	var func = function(){
 		// empty alias...
 		if(target == ''){
@@ -890,25 +921,11 @@ function Alias(alias, doc, ldoc, attrs, target){
 		// XXX should we cache here???
 		var action = parsed || this.parseStringAction(target)
 
-		// handle args...
-		var rest
-		var args = action.arguments.slice()
-			// merge args...
-			.map(function(arg, i){
-				return arg instanceof that.parseStringAction.Argument ?
-					(arg === that.parseStringAction.ALLARGS ?
-						(function(){
-							rest = i
-							return arg
-						})()
-						: in_args[parseInt(arg.value)])
-					: arg instanceof that.parseStringAction.Identifier ?
-						that[arg.value]
-					: arg })
-		rest != null
-			&& args.splice(rest, 1, ...in_args)
-
+		// XXX use that.parseStringAction.call(this, target, in_args)
 		if(this[action.action] instanceof Function){
+			// handle args...
+			var args = that.parseStringAction.resolveArgs(that, action.arguments, in_args)
+
 			// call the alias...
 			return this[action.action].apply(this, args)
 		}
@@ -982,6 +999,15 @@ module.MetaActions = {
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
 	isStringAction: isStringAction,
+
+	// XXX EXPERIMENTAL...
+	call: function(action, ...args){
+		return this[action] ?
+			this[action].apply(this, args)
+			: this.parseStringAction.applyAction(this, action, args) },
+	apply: function(action, args){
+		return this.call(action, ...args)},
+
 
 	// Set/remove action alias...
 	//
