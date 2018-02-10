@@ -1002,8 +1002,10 @@ module.MetaActions = {
 
 	// XXX EXPERIMENTAL...
 	call: function(action, ...args){
-		return this[action] ?
-			this[action].apply(this, args)
+		return action instanceof Function ?
+				action.apply(this, args)
+			: this[action] ?
+				this[action].apply(this, args)
 			: this.parseStringAction.applyAction(this, action, args) },
 	apply: function(action, args){
 		return this.call(action, ...args)},
