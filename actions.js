@@ -363,7 +363,7 @@ function(func){
 // 	Special args:
 // 		IDENTIFIER
 // 				- expanded to context[IDENTIFIER]
-// 		$N		- expanded to and instance of parseStringAction.Argument
+// 		$N		- expanded to an instance of parseStringAction.Argument
 // 		...		- expanded to parseStringAction.ALLARGS (singleton)
 // 			
 // 			
@@ -489,12 +489,17 @@ parseStringAction.resolveArgs = function(context, action_args, call_args){
 
 	return args
 }
+
+// XXX should this break if action does not exist???
 parseStringAction.callAction = function(context, action, ...args){
 	action = typeof(action) == typeof('str') ? 
 		this(action) 
 		: action
-	return context[action.action]
-		.apply(context, this.resolveArgs(context, action.arguments, args))
+	// XXX should this break if action does not exist???
+	return context[action.action] instanceof Function ? 
+		context[action.action]
+			.apply(context, this.resolveArgs(context, action.arguments, args))
+		: undefined
 }
 parseStringAction.applyAction = function(context, action, args){
 	return this.callAction(context, action, ...args) }
@@ -881,6 +886,7 @@ Action.prototype.chainCall = function(context, inner){
 // XXX alias parsing is dependant on the action set, move this functionality
 // 		to the ActionSet.alias(..) method/action...
 // XXX handle alias args and pass them to the target...
+// XXX should an alias return a value???
 var Alias =
 module.Alias =
 function Alias(alias, doc, ldoc, attrs, target){
@@ -919,24 +925,14 @@ function Alias(alias, doc, ldoc, attrs, target){
 		var that = this
 		var in_args = [].slice.call(arguments)
 
-		// XXX handle errors...
-		this.parseStringAction.callAction(this, parsed || target, in_args)
+		var p = parsed || this.parseStringAction(target)
 
-		/*/ parse the target...
-		// XXX should we cache here???
-		var action = parsed || this.parseStringAction(target)
-
-		if(this[action.action] instanceof Function){
-			// handle args...
-			var args = that.parseStringAction.resolveArgs(that, action.arguments, in_args)
-
-			// call the alias...
-			return this[action.action].apply(this, args)
-		}
-
-		// error...
-		console.error(`${alias}: alias to unknown action: ${action.action}`)
-		//*/
+		// XXX should an alias return a value???
+		//return p.action in this ?
+		p.action in this ?
+			this.parseStringAction.callAction(this, p, in_args)
+			// error...
+			: console.error(`${alias}: Unknown alias target action: ${p.action}`)
 	}
 	func.toString = function(){ 
 		return meth.alias.code || meth.alias }
