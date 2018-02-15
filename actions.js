@@ -499,6 +499,7 @@ parseStringAction.callAction = function(context, action, ...args){
 	return context[action.action] instanceof Function ? 
 		context[action.action]
 			.apply(context, this.resolveArgs(context, action.arguments, args))
+		// action not found or is not callable... (XXX)
 		: undefined
 }
 parseStringAction.applyAction = function(context, action, args){
@@ -628,8 +629,12 @@ function Action(name, doc, ldoc, attrs, func){
 	func = args.pop()
 	last = args[args.length-1]
 	attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
-	doc = typeof(args[0]) == typeof('str') ? args.shift() : null
-	ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
+	doc = typeof(args[0]) == typeof('str') ? args.shift() 
+		: func.doc ? func.doc
+		: null
+	ldoc = typeof(args[0]) == typeof('str') ? args.shift() 
+		: func.long_doc ? func.long_doc
+		: null
 
 	// populate the action attributes...
 	//meth.name = name
