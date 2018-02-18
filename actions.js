@@ -757,6 +757,11 @@ Action.prototype.pre = function(context, args){
 	// return context if nothing specific is returned...
 	res = res === undefined ? context 
 		: res === UNDEFINED ? undefined 
+		// returning an explicit [undefined]... (XXX EXPERIMENTAL)
+		: res instanceof Array
+				&& res.length == 1
+				&& res.indexOf(undefined) == 0 ?
+			undefined
 		: res
 
 	return {
