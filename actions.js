@@ -1719,6 +1719,7 @@ module.MetaActions = {
 	// NOTE: this will override existing own attributes.
 	//
 	// XXX should we include functions by default????
+	// XXX should .source_tag be set here or in Actions(..)???
 	inlineMixin: function(from, options){
 		// defaults...
 		options = options || {}
@@ -1766,21 +1767,29 @@ module.MetaActions = {
 				}
 
 				// source tag actions...
-				if(source_tag && attr instanceof Action){
+				// XXX should this set action and method .source_tag or only action???
+				//if(source_tag && attr instanceof Action){
+				if(source_tag && (attr instanceof Action || attr instanceof Function)){
 					// existing tag...
-					if(that[k].source_tag == source_tag || that[k].func.source_tag == source_tag){
+					if(that[k].source_tag == source_tag 
+							|| (that[k].func || {}).source_tag == source_tag){
 						return
 
 					// new tag...
 					// XXX not sure if this is the right way to go...
-					} else if(that[k].source_tag || that[k].func.source_tag){
+					} else if(that[k].source_tag 
+							|| (that[k].func || {}).source_tag){
 						console.warn('Aactions: about to overwrite source tag...\n'
-							+'  from: "'+(that[k].source_tag || that[k].func.source_tag)+'"\n'
+							+'  from: "'
+								+(that[k].source_tag 
+									|| (that[k].func || {}).source_tag)+'"\n'
 							+'  to: "'+source_tag+'"\n'
 							+'  on:', that[k])
 					}
 
-					that[k].func.source_tag = source_tag
+					if(that[k].func){
+						that[k].func.source_tag = source_tag
+					}
 					that[k].source_tag = source_tag
 				}
 			}
@@ -2113,6 +2122,7 @@ object.makeConstructor('ActionSet', MetaActions)
 // XXX add doc, ldoc, tags and save them to each action...
 // XXX is .config processing correct here???
 // XXX do we need to handle methods in a special way???
+// XXX should this set the .source_tag???
 var Actions =
 module.Actions =
 function Actions(a, b){
