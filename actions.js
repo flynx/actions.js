@@ -1094,17 +1094,18 @@ module.MetaActions = {
 
 		// go up the proto chain...
 		while(cur.__proto__ != null){
-			if(cur[action] != null){
+			var c = cur[action]
+			if(c != null){
 				// attribute of action...
-				if(cur[action][attr] !== undefined){
-					return cur[action][attr]
+				if(c[attr] !== undefined){
+					return c[attr]
 
 				// attribute of action function...
-				} else if(cur[action].func && cur[action].func[attr] !== undefined){
-					return cur[action].func[attr]
+				} else if(c.func && c.func[attr] !== undefined){
+					return c.func[attr]
 
 				// alias -> look in the target action...
-				} else if(cur[action] instanceof Alias){
+				} else if(c instanceof Alias){
 					var res = this.getActionAttr(
 						this.parseStringAction(cur[action].alias).action, 
 						attr)
