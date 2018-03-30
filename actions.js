@@ -1045,10 +1045,11 @@ module.MetaActions = {
 	// XXX move to a better spot...
 	alias: Action('alias', function(alias, target){
 		// remove alias...
-		if((arguments.length == 2
-				&& target === false || target === null) 
-				&& this[alias] instanceof Alias){
-			delete this[alias]
+		if(arguments.length == 2
+				&& (target === false || target === null)){
+			// delete only aliases...
+			this[alias] instanceof Alias
+				&& (delete this[alias])
 
 		// set alias...
 		} else {
