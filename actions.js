@@ -938,8 +938,8 @@ function Alias(alias, doc, ldoc, attrs, target){
 		var p = parsed || this.parseStringAction(target)
 
 		// XXX should an alias return a value???
-		//return p.action in this ?
-		p.action in this ?
+		//p.action in this ?
+		return p.action in this ?
 			this.parseStringAction.callAction(this, p, ...in_args)
 			// error...
 			: console.error(`${alias}: Unknown alias target action: ${p.action}`)
