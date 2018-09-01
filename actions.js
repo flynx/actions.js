@@ -958,11 +958,12 @@ function Alias(alias, doc, ldoc, attrs, target){
 
 	attrs.alias = target
 
+	// NOTE: we are not parsing this directly here because the context
+	// 		may define a different .parseStringAction(..)
 	var parsed = typeof(target) == typeof('str') ? null : target
 
 	doc = (!doc && parsed) ? parsed.doc : doc
 
-	// XXX use parseStringAction.call(..)
 	var func = function(){
 		// empty alias...
 		if(target == ''){
@@ -1089,9 +1090,9 @@ module.MetaActions = {
 
 		// set alias...
 		} else {
-			var parsed = typeof(target) == typeof('str') ?
-				this.parseStringAction(target)
-				: target
+			//var parsed = typeof(target) == typeof('str') ?
+			//	this.parseStringAction(target)
+			//	: target
 			this[alias] = Alias.apply(null, arguments)
 		}
 	}),
