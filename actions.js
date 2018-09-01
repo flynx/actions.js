@@ -593,6 +593,36 @@ function(txt){
 // 		XXX is this correct??
 // NOTE: by default an action will return 'this', i.e. the action set
 // 		object the action was called from.
+// NOTE: if func.nmae is set to '<action-name>' it will be reset to the 
+// 		action name by Action(..). This is a means for extending functions 
+// 		to get the specific action name.
+// 		Example:
+// 			var getActionName = function(func){
+// 				var f = function(...args){
+// 					return func(f.name, ...args) } 
+// 				// this will force Actions(..) to set a name on f
+//				Object.defineProperty(f, 'name', { value: '<action-name>' })
+// 				return f
+// 			}
+//
+// 			...
+//
+// 			someAction: [
+// 				getActionName(function(name, ...args){
+// 					console.log('Action name:', name)
+// 				})],
+// 			someOtherAction: [
+// 				function(name, ...args){
+// 					// there is no way to know the action name from within
+// 					// and action...
+// 				}],
+//
+// 		But note that the .name is set in definition time and not in 
+// 		call time, so renaming the action in runtime will have no effect 
+// 		on what it will log...
+// 		Also note that using Object.defineProperty(..) is required as 
+// 		chrome ignores changes to function's .name in other cases...
+// 		
 //
 // XXX add more metadata/docs:
 // 		.section
@@ -645,6 +675,12 @@ function Action(name, doc, ldoc, attrs, func){
 	meth.long_doc = ldoc
 
 	meth.func = func
+
+	if(func.name == '<action-name>'){
+		Object.defineProperty(func, 'name', {
+			value: name,
+		})
+	}
 
 	// make introspection be a bit better...
 	meth.toString = func.toString.bind(func)
