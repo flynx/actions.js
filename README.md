@@ -234,8 +234,11 @@ Root Action                             o---|---x
 - the base/root action can return any value.  
   **Notes:**  
     - if undefined is returned, it will be replaced by the 
-		  action context/action set.
-	- `false` and `null` are returned as-is.
+		  action context/action set,
+	- if a function is returned it is treated as a post phase action,
+	- to return a reserved value (undefined, function) wrap it in 
+		  `actions.ASIS(..)`
+	- any other return value is returned as-is,
     - there is no distinction between root and other actions
 		  other than that root action's return values are not 
 		  ignored.

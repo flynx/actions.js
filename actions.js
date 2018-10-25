@@ -15,8 +15,14 @@ var object = require('ig-object')
 
 var args2array = function(a){ return [].slice.call(a) } 
 
+var ASIS =
+module.ASIS = 
+object.makeConstructor('ASIS', {
+	__init__: function(obj){ this.value = obj },
+})
+
 var UNDEFINED =
-module.UNDEFINED = ['undefined placeholder']
+module.UNDEFINED = ASIS(undefined)
 
 
 
@@ -792,7 +798,7 @@ Action.prototype.pre = function(context, args){
 
 	// return context if nothing specific is returned...
 	res = res === undefined ? context 
-		: res === UNDEFINED ? undefined 
+		: res instanceof ASIS ? res.value
 		// XXX returning an explicit [undefined]...
 		//: res instanceof Array
 		//		&& res.length == 1
