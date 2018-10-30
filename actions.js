@@ -677,8 +677,8 @@ function Action(name, doc, ldoc, attrs, func){
 	Object.defineProperty(meth, 'name', {
 		value: name,
 	})
-	meth.doc = doc
-	meth.long_doc = ldoc
+	func.doc = meth.doc = doc
+	func.long_doc = meth.long_doc = ldoc
 
 	meth.func = func
 
@@ -1459,6 +1459,11 @@ module.MetaActions = {
 					res.post = a.post_handler
 				}
 
+				a.doc
+					&& (res.doc = a.doc)
+				a.long_doc
+					&& (res.long_doc = a.long_doc)
+
 				return res
 			})
 	},
@@ -2004,9 +2009,27 @@ module.MetaActions = {
 	// XXX would be nice to make these prop of the action itself but I 
 	// 		do not see a way to do this properly yet -- we can't get to 
 	// 		the action context from the action dynamically...
+	// XXX add doc per action...
 	getHandlerDocStr: function(name){
 		var lst = this.getHandlers(name)
 		var str = ''
+
+		var getTags = function(handler, p){
+			return (handler.event_tag ? 
+					normalizeTabs('// Event tag: ' + handler.event_tag) + p 
+					: '')
+				+ (handler.source_tag ? 
+					normalizeTabs('// Source tag: ' + handler.source_tag) + p 
+					: '') }
+		var getDoc = function(cur, p){
+			return (cur.doc ? 
+					'// --- .doc ---'+p
+					+'// '+ normalizeTabs(cur.doc).replace(/\n/g, p+'// ') +p 
+					: '')
+				+ (cur.long_doc ? 
+					'// --- .long_doc ---'+p
+					+'// '+ normalizeTabs(cur.long_doc).replace(/\n/g, p+'// ') + p 
+					: '') }
 
 		var handler = function(p){
 			if(lst.length == 0){
@@ -2021,22 +2044,10 @@ module.MetaActions = {
 
 			if(cur.pre){
 				str += p 
-					// meta...
-					+ (cur.pre.event_tag ? 
-						normalizeTabs('// Event tag: ' + cur.pre.event_tag) + p : '')
-					+ (cur.pre.source_tag ? 
-						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
+					+ getTags(cur.pre, p)
+					+ getDoc(cur, p)
 					// code...
 					+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
-					/*
-					+ normalizeTabs(
-						!cur.pre.alias ? 
-							cur.pre.toString()
-						: typeof(cur.pre.alias) == typeof('str') ?
-							cur.pre.alias 
-						: cur.pre.alias.code
-					).replace(/\n/g, p)
-					*/
 					+ p
 			}
 
@@ -2046,11 +2057,8 @@ module.MetaActions = {
 
 			if(cur.post){
 				str += p + p 
-					// meta...
-					+ (cur.post.event_tag ? 
-						normalizeTabs('// Event source tag: ' + cur.post.event_tag) + p : '')
-					+ (cur.post.source_tag ? 
-						normalizeTabs('// Source tag: ' + cur.post.source_tag) + p : '')
+					+ getTags(cur.post, p)
+					+ getDoc(cur, p)
 					// code...
 					+ normalizeTabs(cur.post.toString()).replace(/\n/g, p)
 			}
