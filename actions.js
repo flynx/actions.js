@@ -265,6 +265,33 @@ module.UNDEFINED = ASIS(undefined)
 //	XXX
 //
 //
+// 5) After action calls...
+// 	This enables the action code to schedule a call after the current 
+// 	action level or the root action is done.
+//
+// 		.afterAction(func)
+// 		.afterAction('top', func)
+// 			-> this
+//
+// 		.afterAction('local', func)
+// 			-> this
+//
+// 	Example:
+// 		someAction: [
+// 			function(){
+// 				...
+//
+// 				// the function passed will get called after the root action 
+// 				// and all it's handlers are done.
+// 				this.afterAction(function(){ ... })
+//
+// 				...
+// 			}],
+// 		
+// 	NOTE: the functions are executed in order of registration.
+// 	XXX EXPERIMENTAL (handler cache)...
+//
+//
 //
 // Alias protocols:
 //
@@ -733,6 +760,17 @@ Action.prototype.__proto__ = Function
 Action.prototype.pre = function(context, args){
 	args = args || []
 
+	// prepare for after calls...
+	// XXX this may pose problems with concurency...
+	// XXX do not like that this forces exception rethrowing...
+	// XXX EXPERIMENTAL (after calls)...
+	context.__action_after_running = [
+		// nested call...
+		context.__action_after_running,
+		// top list...
+		(context.__action_after_running || [null, []])[1],
+	]
+
 	var res = context
 	var outer = this.name
 
@@ -754,47 +792,55 @@ Action.prototype.pre = function(context, args){
 		getHandlers.call(context, '__call__') 
 		: []
 
-	// wrapper handlers: pre phase...
-	call_wrapper = call_wrapper
-		.map(function(a){
-			if(a.pre){
-				res = a.pre.call(context, outer, args)
+	try {
+		// wrapper handlers: pre phase...
+		call_wrapper = call_wrapper
+			.map(function(a){
+				if(a.pre){
+					res = a.pre.call(context, outer, args)
 
-				// if a handler returns a function register is as a post
-				// handler...
-				if(res 
-						&& res !== context 
-						&& res instanceof Function){
-					a.post = res
+					// if a handler returns a function register is as a post
+					// handler...
+					if(res 
+							&& res !== context 
+							&& res instanceof Function){
+						a.post = res
+					}
 				}
-			}
-			return a
-		})
+				return a
+			})
 
-	// handlers: pre phase...
-	handlers
-		// NOTE: current action will get included and called by the code 
-		// 		above and below, so no need to explicitly call func...
-		// NOTE: pre handlers are called FIFO, i.e. the last defined first... 
-		.map(function(a){
-			if(a.pre){
-				res = a.pre.apply(context, args)
+		// handlers: pre phase...
+		handlers
+			// NOTE: current action will get included and called by the code 
+			// 		above and below, so no need to explicitly call func...
+			// NOTE: pre handlers are called FIFO, i.e. the last defined first... 
+			.map(function(a){
+				if(a.pre){
+					res = a.pre.apply(context, args)
 
-				// if a handler returns a function register is as a post
-				// handler...
-				if(res 
-						&& res !== context 
-						&& res instanceof Function){
-					a.post = res
+					// if a handler returns a function register is as a post
+					// handler...
+					if(res 
+							&& res !== context 
+							&& res instanceof Function){
+						a.post = res
 
-					// reset the result...
-					// NOTE: this is the only difference between this 
-					// 		and wrapper stages...
-					res = context
+						// reset the result...
+						// NOTE: this is the only difference between this 
+						// 		and wrapper stages...
+						res = context
+					}
 				}
-			}
-			return a
-		})
+				return a
+			})
+
+	// XXX EXPERIMENTAL (after calls)...
+	} catch(error){
+		// XXX should we unwind this???
+		delete context.__action_after_running
+		throw error
+	}
 
 	// return context if nothing specific is returned...
 	res = res === undefined ? context 
@@ -824,23 +870,48 @@ Action.prototype.post = function(context, data){
 
 	var outer = this.name
 
-	// handlers: post phase...
-	data.handlers && data.handlers
-		// NOTE: post handlers are called LIFO -- last defined last...
-		.reverse()
-		.forEach(function(a){
-			a.post
-				&& a.post.apply(context, args)
-		})
+	try {
+		// handlers: post phase...
+		data.handlers && data.handlers
+			// NOTE: post handlers are called LIFO -- last defined last...
+			.reverse()
+			.forEach(function(a){
+				a.post
+					&& a.post.apply(context, args)
+			})
 
-	// wrapper handlers: post phase...
-	data.wrapper && data.wrapper
-		// NOTE: post handlers are called LIFO -- last defined last...
-		.reverse()
-		.forEach(function(a){
-			a.post
-				&& a.post.call(context, res, outer, args.slice(1))
-		})
+		// wrapper handlers: post phase...
+		data.wrapper && data.wrapper
+			// NOTE: post handlers are called LIFO -- last defined last...
+			.reverse()
+			.forEach(function(a){
+				a.post
+					&& a.post.call(context, res, outer, args.slice(1))
+			})
+
+	// XXX EXPERIMENTAL (after calls)...
+	} catch(error){
+		// should we unwind this???
+		delete context.__action_after_running
+		throw error
+	}
+
+	// handle after calls...
+	// XXX EXPERIMENTAL (after calls)...
+	;(context.__action_after_running || [])
+		.slice(2)
+		.forEach(function(func){
+			func.call(context) })
+	// top calls...
+	if(context.__action_after_running[0] == null){
+		;(context.__action_after_running[1] || [])
+			.forEach(function(func){
+				func.call(context) })
+		delete context.__action_after_running
+	// back to prev level...
+	} else {
+		context.__action_after_running = context.__action_after_running[0]
+	}
 
 	return res
 }
@@ -1292,8 +1363,8 @@ module.MetaActions = {
 	// 		event handlers can be added on the tree in runtime.
 	//
 	//
-	// XXX EXPERIMENTAL...
 	// XXX should we use the toggler object here???
+	// XXX EXPERIMENTAL (handler cache)...
 	toggleHandlerCache: function(to){
 		if(to == '?'){
 			return this.__handler_cache ? 'on' : 'off'
@@ -1344,7 +1415,7 @@ module.MetaActions = {
 	//
 	// NOTE: when .toggleHandlerCache('?') is 'off' this has no effect.
 	//
-	// XXX EXPERIMENTAL...
+	// XXX EXPERIMENTAL (handler cache)...
 	resetHandlerCache: function(name){
 		var cache = this.__handler_cache
 		if(cache){
@@ -1380,7 +1451,8 @@ module.MetaActions = {
 	//
 	// For more docs on handler sequencing and definition see: .on(..)
 	getHandlerList: function(name){
-		// handler cache...  XXX EXPERIMENTAL...
+		// handler cache...
+		// XXX EXPERIMENTAL (handler cache)...
 		var cache = this.__handler_cache
 		if(cache && cache[name]){
 			return cache[name].slice()
@@ -1417,7 +1489,8 @@ module.MetaActions = {
 			cur = cur.__proto__
 		}
 
-		// handler cache... XXX EXPERIMENTAL...
+		// handler cache... 
+		// XXX EXPERIMENTAL (handler cache)...
 		if(cache){
 			cache[name] = handlers
 		}
@@ -1670,6 +1743,38 @@ module.MetaActions = {
 			handler.orig_handler = _handler
 			that.on(action, tag, handler)
 		})
+
+		return this
+	},
+
+	// XXX EXPERIMENTAL (after calls)...
+	isActionRunning: function(){
+		return !!this.__action_after_running },
+	// Queue a function after the action is done...
+	//
+	// 	.afterAction(func)
+	// 	.afterAction('top', func)
+	// 		-> this
+	//
+	// 	.afterAction('local', func)
+	// 		-> this
+	//
+	// XXX EXPERIMENTAL (after calls)...
+	afterAction: function(mode, func){
+		func = mode instanceof Function ? mode : func
+		mode = mode instanceof Function ? null : mode
+		mode = mode || 'top'
+
+		if(!this.__action_after_running){
+			throw new Error('afterAction: no action is running.')
+		}
+
+		;(mode == 'top' ?
+				this.__action_after_running[1]
+			: mode == 'local' ?
+				this.__action_after_running
+			: this.__action_after_running)
+			.push(func) 
 
 		return this
 	},
