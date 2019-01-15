@@ -903,15 +903,16 @@ Action.prototype.post = function(context, data){
 		.forEach(function(func){
 			func.call(context) })
 	// top calls...
-	if(context.__action_after_running 
-			&& context.__action_after_running[0] == null){
-		;(context.__action_after_running[1] || [])
-			.forEach(function(func){
-				func.call(context) })
-		delete context.__action_after_running
-	// back to prev level...
-	} else {
-		context.__action_after_running = context.__action_after_running[0]
+	if(context.__action_after_running){
+		if(context.__action_after_running[0] == null){
+			;(context.__action_after_running[1] || [])
+				.forEach(function(func){
+					func.call(context) })
+			delete context.__action_after_running
+		// back to prev level...
+		} else {
+			context.__action_after_running = context.__action_after_running[0]
+		}
 	}
 
 	return res
