@@ -542,5 +542,11 @@ _action_ is build-in.
 XXX need docs on mix(..) and .mix*(..) protocols...
 
 
+## License
+
+[BSD 3-Clause License](./LICENSE)
+
+Copyright (c) 2018, Alex A. Naanou,
+All rights reserved.
 
 <!-- vim:set ts=4 sw=4 spell : -->
