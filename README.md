@@ -217,9 +217,9 @@ The call diagram:
                         +  pre  +  pre  +       +  post +  post +
 Action event handler:   o-------x                       o-------x
                                 v                       ^
-Actions                         o-------x       o-------x
+Actions:                        o-------x       o-------x
                                         v       ^
-Root Action                             o---|---x
+Root Action:                            o---|---x
 
 ```
 
@@ -255,19 +255,19 @@ Root Action                             o---|---x
 
 **Action (event) handler**
 
-When `action_set` object is inherited from a `ActionSet` object or 
+When `actionSet` object is inherited from a `ActionSet` object or 
 from `MetaActions`:
 ```javascript
-action_set.on('action_name', function(){
+actionSet.on('action_name', function(){
     // post code...
 })
 
-action_set.on('action_name.post', function(){
+actionSet.on('action_name.post', function(){
     // post code...
 })
 
 
-action_set.on('action_name.pre', function(){
+actionSet.on('action_name.pre', function(){
     // pre code...
 })
 ```
@@ -288,14 +288,11 @@ action_set.on('action_name.pre', function(){
 **Alias**
 
 ```javascript
-    // ...
-
     fullAlias: ['Alias to .full(..) action...',
-        'This alias will call the .full(..) action and pass it a couple of arguments',
+        `This alias will call the .full(..) action and pass it a couple of
+        arguments`,
         // the alias code...
         'full: "argument" 1'],
-
-    // ...
 ```
 
 - an action created by `Alias(..)`,
@@ -318,178 +315,211 @@ from an instance of `ActionSet`. In general this includes all
 `ActionSet / object` level methods while anything accessible from the 
 _action_ is build-in.
 
-1. Documentation generation and introspection (`MetaActions`)
+#### 1. Documentation generation and introspection (`MetaActions`)
 
-  ```
-  <action>.toString()
-      -> code of original action function
+```
+<action>.toString()
+    -> code of original action function
 
-  <action-set>.getDoc()
-  <action-set>.getDoc(<action-name>[, ..])
-      -> dict of action-name, doc
+<action-set>.getDoc()
+<action-set>.getDoc(<action-name>[, ..])
+    -> dict of action-name, doc
 
-  <action-set>.getHandlerDocStr(<action-name>)
-      -> formated string of action handlers
+<action-set>.getHandlerDocStr(<action-name>)
+    -> formated string of action handlers
 
-  <action-set>.actions
-      -> list of action names
-  ```
-
-
-2. Event-like callbacks for actions (`MetaActions`, `Action`)
-
-  ```
-  <action-set>.on('action', function(){ ... })
-  <action-set>.on('action.post', function(){ ... })
-
-  <action-set>.on('action.pre', function(){ ... })
-  ```
+<action-set>.actions
+    -> list of action names
+```
 
 
-3. A mechanism to define and extend already defined actions
-	This replaces / complements the standard JavaScript overloading 
-	mechanisms (`Action`, `Actions`)
+#### 2. Event-like callbacks for actions (`MetaActions`, `Action`)
 
-  ```javascript
-  // Actions...
-  var X = Actions({
-      m: [function(){ console.log('m') }]
-  })
-  var O = Actions(X, {
-      m: [function(){
-          console.log('pre')
-          return function(res){
-              console.log('post')
-          }
-      }]
-  })
-  ```
+```
+<action-set>.on('action', function(){ ... })
+<action-set>.on('action.post', function(){ ... })
 
-  **Notes:**
-  - what is done here is similar to calling `O.__proto__.m.call(..)`
-    but is implicit, and not dependant on the original containing 
-    object name/reference (`O`), thus enabling an action to be 
-    referenced and called from any object and still chain correctly.
+<action-set>.on('action.pre', function(){ ... })
+```
+
+
+#### 3. A mechanism to define and extend already defined actions
+
+This replaces / complements the standard JavaScript overloading 
+mechanisms (`Action`, `Actions`)
+
+```javascript
+// Actions...
+var X = Actions({
+    m: [function(){ console.log('m') }]
+})
+var O = Actions(X, {
+    m: [function(){
+        console.log('pre')
+        return function(res){
+            console.log('post')
+        }
+    }]
+})
+```
+
+**Notes:**
+- what is done here is similar to calling `O.__proto__.m.call(..)`
+  but is implicit, and not dependant on the original containing 
+  object name/reference (`O`), thus enabling an action to be 
+  referenced and called from any object and still chain correctly.
 
 
 
 ### Secondary action protocols:
 
-1. A mechanism to manually call the pre/post stages of an action
+#### 1. A mechanism to manually call the pre/post stages of an action
 
-  Pre phase...
-  ```
-  <action>.pre(<context>)
-  <action>.pre(<context>, [<arg>, ..])
-      -> <call-data>
-  ```
+Pre phase...
+```
+<action>.pre(<context>)
+<action>.pre(<context>, [<arg>, ..])
+    -> <call-data>
+```
 
-  Post phase...
-  ```
-  <action>.post(<context>, <call-data>)
-      -> <result>
-  ```
+Post phase...
+```
+<action>.post(<context>, <call-data>)
+    -> <result>
+```
 
-  This is internally used to implement the action call as well as the
-  chaining callbacks (see below).
+This is internally used to implement the action call as well as the
+chaining callbacks (see below).
 
-  All action protocol details apply.
+All action protocol details apply.
 
-  **Notes:**
-  - there is no reliable way to call the post phase without first
-    calling the pre phase due to how the pre phase is defined (i.e.
-    pre phase functions can return post phase functions).
-
-
-2. A mechanism to chain/wrap actions or an action and a function.
-	This enables us to call a callback or another action (inner) between 
-	the root action's (outer) pre and post stages.
-
-  ```
-  Outer action                o-------x       o-------x
-                                      v       ^
-  Inner action/callback               o---|---x
-  ```
-
-  A trivial example:
-
-  ```javascript
-  actionSet.someAction.chainApply(actionsSet, 
-      function(){
-          // this gets run between someAction's pre and post 
-          // stages...
-      }, 
-      args)
-  ```
-
-  This is intended to implement protocols where a single action is
-  intended to act as a hook point (outer) and multiple different 
-  implementations (inner) within a single action set can be used as
-  entry points.
-
-  ```javascript
-  // Protocol root action (outer) definition...
-  protocolAction: [function(){}],
-
-  // Implementation actions (inner)...
-  implementationAction1: [function(){
-      return this.protocolAction.chainApply(this, function(){
-          // ...
-      }, ..)
-  }]
-
-  implementationAction2: [function(){
-      return this.protocolAction.chainApply(this, function(){
-          // ...
-      }, ..)
-  }]
-  ```
-
-  Now calling any of the 'implementation' actions will execute code
-  in the following order:
-  1. pre phase of protocol action (outer)
-  2. implementation action (inner)
-  3. post phase of protocol action (outer)
-
-  **Notes:**
-  - this will not affect to protocol/signature of the outer action
-    in any way.
-  - both the inner and outer actions will get passed the same 
-    arguments.
-  - another use-case is testing/debugging actions.
-  - this is effectively the inside-out of normal action overloading.
-  - there is intentionally no shorthand for this feature, to avoid 
-    confusion and to discourage the use of this feature unless
-    really necessary.
+**Notes:**
+- there is no reliable way to call the post phase without first
+  calling the pre phase due to how the pre phase is defined (i.e.
+  pre phase functions can return post phase functions).
 
 
-3. `.__call__` action / handler
+#### 2. A mechanism to chain/wrap actions or an action and a function.
+This enables us to call a callback or another action (inner) between 
+the root action's (outer) pre and post stages.
 
-  This action if defined is called for every action called. It behaves
-  like any other action but with a fixed signature, it always receives 
-  the action name as first argument and a list of action arguments as
-  the second arguments, and as normal a result on the post phase.
+```
+Outer action                o-------x       o-------x
+                                    v       ^
+Inner action/callback               o---|---x
+```
 
-  **Notes:**
-  - it is not necessary to define the actual action, binding to a
-    handler will also work.
-  - one should not call actions directly from within a __call__ 
-    handler as that will result in infinite recursion.  
-  - one should use this with extreme care as this will introduce 
-    an overhead on all the actions if not done carefully.
+A trivial example:
+
+```javascript
+actionSet.someAction.chainApply(actionsSet, 
+    function(){
+        // this gets run between someAction's pre and post 
+        // stages...
+    }, 
+    args)
+```
+
+This is intended to implement protocols where a single action is
+intended to act as a hook point (outer) and multiple different 
+implementations (inner) within a single action set can be used as
+entry points.
+
+```javascript
+    // Protocol root action (outer) definition...
+    protocolAction: [function(){}],
+
+    // Implementation actions (inner)...
+    implementationAction1: [function(){
+        return this.protocolAction.chainApply(this, function(){
+            ...
+        }, ..)
+    }],
+
+    implementationAction2: [function(){
+        return this.protocolAction.chainApply(this, function(){
+            ...
+        }, ..)
+    }],
+```
+
+Now calling any of the 'implementation' actions will execute code
+in the following order:
+1. pre phase of protocol action (outer)
+2. implementation action (inner)
+3. post phase of protocol action (outer)
+
+**Notes:**
+- this will not affect to protocol/signature of the outer action
+  in any way.
+- both the inner and outer actions will get passed the same 
+  arguments.
+- another use-case is testing/debugging actions.
+- this is effectively the inside-out of normal action overloading.
+- there is intentionally no shorthand for this feature, to avoid 
+  confusion and to discourage the use of this feature unless
+  really necessary.
 
 
-4. Action attributes
+#### 3. `.__call__` action / handler
 
-  XXX
+This action if defined is called for every action called. It behaves
+like any other action but with a fixed signature, it always receives 
+the action name as first argument and a list of action arguments as
+the second arguments, and as normal a result on the post phase.
 
-  ```
-  <action-set>.getActionAttr('action', 'attr')
-      -> <value>
+**Notes:**
+- it is not necessary to define the actual action, binding to a
+  handler will also work.
+- one should not call actions directly from within a __call__ 
+  handler as that will result in infinite recursion.  
+- one should use this with extreme care as this will introduce 
+  an overhead on all the actions if not done carefully.
 
-  <action-set>.getRootActionAttr('action', 'attr')
-      -> <value>
-  ```
+
+#### 4. Action attributes
+
+XXX
+
+```
+<action-set>.getActionAttr('action', 'attr')
+    -> <value>
+
+<action-set>.getRootActionAttr('action', 'attr')
+    -> <value>
+```
+
+#### 5. Scheduling a call after the running action
+
+This enables the action code to schedule a call after the current 
+action level or the root action is done.
+
+```
+<action-set>.afterAction(func)
+<action-set>.afterAction('top', func)
+    -> this
+
+<action-set>.afterAction('local', func)
+    -> this
+```
+
+Example:
+```javascript
+    someAction: [
+        function(){
+            ...
+
+            // the function passed will get called after the root action 
+            // and all it's handlers are done.
+            this.afterAction(function(){ ... })
+
+            ...
+        }],
+```
+
+**Notes:** 
+- The functions are executed in order of registration.
+- This is pointless outside of an action call, this an exception will be thrown.
 
 
 ### Alias protocols:
