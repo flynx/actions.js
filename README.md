@@ -561,11 +561,11 @@ Example:
   ```
 
   Special arguments:
-  - *IDENTIFIER*
+  - *IDENTIFIER*  
     expanded to `context[IDENTIFIER]`
-  - *$N*
+  - *$N*  
     expanded to an instance of `parseStringAction.Argument`
-  - *...*
+  - *...*  
     expanded to `parseStringAction.ALLARGS` (singleton)
  			
 
