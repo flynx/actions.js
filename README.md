@@ -519,25 +519,77 @@ Example:
 
 **Notes:** 
 - The functions are executed in order of registration.
-- This is pointless outside of an action call, this an exception will be thrown.
+- This is pointless outside of an action call, thus an exception will be thrown.
 
 
 ### Alias protocols:
 
 1. Defining aliases in runtime (MetaActions)
 
+  An alias is a mechanism to call an action (or alias) passing it a fixed
+  set of arguments.
+
   ```
   <action-set>.alias('alias', 'action: args')
   <action-set>.alias('alias', .., 'action: args')
       -> <action-set>
   ```
-		
-  To enable extending in runtime .alias(..) itself is implemented as 
-  an action, thus all action protocols also apply.
+
+  Aliases can be defined inline:
+  ```
+  someAction: [
+  	'action: arg'],
+  ```
+
+  Alias code syntax:
+  ```BNF
+  ALIAS ::= 
+      <action-name>
+      | <action-name>: <args>
+      | <action-name>: <args> <comment>
+  <args> ::=
+      <arg>
+      | <arg> <args>
+  <arg> ::=
+      Number|String|Array|Object
+      | IDENTIFIER
+      | ...
+      | '$[0-9]'
+  <comment> ::=
+      '--.*$'
+ 			
+  ```
+
+  Special arguments:
+  - *IDENTIFIER*
+    expanded to `context[IDENTIFIER]`
+  - *$N*
+    expanded to an instance of `parseStringAction.Argument`
+  - *...*
+    expanded to `parseStringAction.ALLARGS` (singleton)
+ 			
+
+  Example:
+  ```javascript
+  go: [
+      function(direction, ...opts){
+          // ...
+      }],
+
+  // aliases to go...
+  north: ['go: "north" -- Go north...'], 
+  south: ['go: "south" -- Go south...'], 
+  east: ['go: "east" -- Go east...'], 
+  west: ['go: "west" -- Go west...'], 
+
+  ```
+	
 	
   **Notes:** 
   - `.alias(..)` is signature compatible to `Action(..)` / `Alias(..)`,
 	supporting all the documentation and attribute definition.
+  - To enable extending in runtime .alias(..) itself is implemented as 
+    an action, thus all action protocols also apply.
 
 
 2. Deleting aliases in runtime (MetaActions)
