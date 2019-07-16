@@ -17,7 +17,7 @@ var args2array = function(a){ return [].slice.call(a) }
 
 var ASIS =
 module.ASIS = 
-object.makeConstructor('ASIS', {
+object.Constructor('ASIS', {
 	__init__: function(obj){ this.value = obj },
 })
 
@@ -481,7 +481,7 @@ function(txt){
 }
 
 parseStringAction.Identifier = 
-object.makeConstructor(
+object.Constructor(
 	'Identifier', 
 	{
 		__init__: function(value){
@@ -490,7 +490,7 @@ object.makeConstructor(
 		valueOf: function(){ return this.value },
 	})
 parseStringAction.Argument = 
-object.makeConstructor(
+object.Constructor(
 	'Argument', 
 	{
 		__init__: function(value){
@@ -2232,7 +2232,7 @@ module.MetaActions = {
 
 var ActionSet =
 module.ActionSet =
-object.makeConstructor('ActionSet', MetaActions)
+object.Constructor('ActionSet', MetaActions)
 
 
 
