@@ -522,6 +522,48 @@ Example:
 - This is pointless outside of an action call, thus an exception will be thrown.
 
 
+#### 6. Calling action handlers sorted independently of the prototype chain
+
+This sorts action handlers by priority `.sortedActionPriority` then 
+order and calls them.
+
+This protocol enables us to call actions in a deterministic order 
+independent of the order the handlers are defined in the prototype chain.
+
+```
+<action-set>.callSortedAction(name, ...args)
+	-> this
+```
+
+Example action:
+```javascript
+    someAction: [
+        { sortedActionPriority: 'high' },
+        function(){
+            ...
+        }],
+```
+
+`sortedActionPriority` can take the following values:
+- *number*
+- `'high'` (equivalent to `50`)
+- `'normal'` (equivalent to `0`)
+- `'low'` (equivalent to `-50`)
+
+The greater the priority the earlier the handler is called. Handlers with 
+prioorities greater than `0` will always precede the unprioretized (i.e. 
+`.sortedActionPriority` unset, `null` or `0`) handlers; Handlers with 
+prioorities less than `0` will always follow the unprioretized handlers. 
+Unprioretized handlers keep their relative order.
+
+**Notes:** 
+- `.callSortedAction(..)` ignores handler return values by design. This is 
+done to prevent actions competing to return a value.
+- if action name does not exist this will do nothing and return normally 
+(without error)...
+
+
+
 ### Alias protocols:
 
 1. Defining aliases in runtime (MetaActions)

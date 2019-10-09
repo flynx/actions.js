@@ -1821,6 +1821,56 @@ module.MetaActions = {
 	chainCall: function(outer, inner){
 		return this[outer].chainApply(this, inner, args2array(arguments).slice(2)) },
 
+
+	// Call action handlers serted by .sortedActionPriority...
+	//
+	// NOTE: this by design ignores the action call results to avoid 
+	//		actions competing on who will return a value...
+	// NOTE: if action name does not exist this will do nothing and 
+	//		return normally (without error)...
+	// NOTE: this essentially re-implements parts of the .pre(..)/.post(..)
+	// 		action protocol...
+	// NOTE: this may not support some legacy action protocol features...
+	callSortedAction: function(name, ...args){
+		var that = this
+		this.getHandlers(name)
+			.map(function(h, i){ 
+				var p = (h.pre || {}).sortedActionPriority
+				// normalize priority...
+				p = p == 'high' ?
+						50
+					: p == 'normal' ?
+						0
+					: p == 'low' ?
+						-50
+					: p
+				return [i, p, h] })
+			// sort by .sortedActionPriority ascending...
+			.sort(function([ia, pa, a], [ib, pb, b]){
+				return (pa != null && pb != null) ?
+						pa - pb
+					: (pa > 0 || pb < 0) ?
+						1
+					: (pb > 0 || pa < 0) ?
+						-1
+					: ia - ib })
+			// the list should be ordered descending form highest 
+			// priority or closeness to root action...
+			.reverse()
+			// call the actions (pre)...
+			.map(function([i, p, a]){
+				return a.pre ? 
+					a.pre.call(that, ...args)
+					: a.post })
+			.reverse()
+			// call the actions (post)...
+			// NOTE: we do not care about call results here...
+			.forEach(function(func){
+				func instanceof Function
+					&& func.call(that, ...args) }) },
+		
+
+
 	// Get action/method resolution order...
 	//
 	// 	List mixin tags...
