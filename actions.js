@@ -1867,7 +1867,8 @@ module.MetaActions = {
 			// NOTE: we do not care about call results here...
 			.forEach(function(func){
 				func instanceof Function
-					&& func.call(that, ...args) }) },
+					&& func.call(that, ...args) }) 
+		return this },
 		
 
 
