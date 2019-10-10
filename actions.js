@@ -719,8 +719,8 @@ function Action(name, doc, ldoc, attrs, func){
 	meth.toString = func.toString.bind(func)
 
 	// setup attrs...
-	Object.keys(attrs)
-		.forEach(function(k){ meth[k] = attrs[k] })
+	Object.assign(meth, attrs)
+	Object.assign(func, attrs)
 
 	return meth
 }
