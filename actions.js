@@ -13,8 +13,6 @@ var object = require('ig-object')
 
 /*********************************************************************/
 
-var args2array = function(a){ return [].slice.call(a) } 
-
 var ASIS =
 module.ASIS = 
 object.Constructor('ASIS', {
@@ -366,7 +364,7 @@ var doWithRootAction =
 module.doWithRootAction = 
 function(func){
 	return function(){
-		var args = args2array(arguments)
+		var args = [...arguments]
 		var handlers = (this.getHandlerList 
 				|| MetaActions.getHandlerList)
 			.apply(this, args)
@@ -989,7 +987,7 @@ Action.prototype.chainApply = function(context, inner, args){
 	return this.post(context, data)
 }
 Action.prototype.chainCall = function(context, inner){
-	return this.chainApply(context, inner, args2array(arguments).slice(2))
+	return this.chainApply(context, inner, [...arguments].slice(2))
 }
 
 
@@ -1286,7 +1284,7 @@ module.MetaActions = {
 		var res = {}
 		var that = this
 		actions = actions == null ? this.actions
-			: arguments.length > 1 ? args2array(arguments)
+			: arguments.length > 1 ? [...arguments]
 			: typeof(actions) == typeof('str') ? [actions]
 			: actions
 
@@ -1310,7 +1308,7 @@ module.MetaActions = {
 		var res = {}
 		var that = this
 		actions = actions == null ? this.actions
-			: arguments.length > 1 ? args2array(arguments)
+			: arguments.length > 1 ? [...arguments]
 			: typeof(actions) == typeof('str') ? [actions]
 			: actions
 
@@ -1819,7 +1817,7 @@ module.MetaActions = {
 	chainApply: function(outer, inner, args){
 		return this[outer].chainApply(this, inner, args) },
 	chainCall: function(outer, inner){
-		return this[outer].chainApply(this, inner, args2array(arguments).slice(2)) },
+		return this[outer].chainApply(this, inner, [...arguments].slice(2)) },
 
 
 	// Call action handlers serted by .sortedActionPriority...
