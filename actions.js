@@ -13,12 +13,17 @@ var object = require('ig-object')
 
 /*********************************************************************/
 
+// Return value wrapper...
+// 
+// Wrapping a value in this and returning it from an action will force
+// the action to return the value as-is...
+// This is mainly usefull for specially handled values.
 var ASIS =
 module.ASIS = 
 object.Constructor('ASIS', {
-	__init__: function(obj){ this.value = obj },
-})
+	__init__: function(obj){ this.value = obj } })
 
+// undefined wrapper...
 var UNDEFINED =
 module.UNDEFINED = ASIS(undefined)
 
