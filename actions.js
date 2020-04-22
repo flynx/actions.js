@@ -338,7 +338,6 @@ module.UNDEFINED = ASIS(undefined)
 
 var normalizeTabs = function(str){
 	str = str.split(/\n/g)
-
 	// get min number of leading tabs...
 	var i = str.length == 2 && /^\t/.test(str[1]) ?
 		str[1].split(/^(\t+)/)[1].length - 1
@@ -352,7 +351,6 @@ var normalizeTabs = function(str){
 				return /^\t+/.test(l) ? 
 					l.split(/^(\t+)/)[1].length
 					: 0}))
-
 	return (str[0] +'\n' 
 		+ str
 			.slice(1)
@@ -361,8 +359,7 @@ var normalizeTabs = function(str){
 			// replace tabs...
 			.replace(/\t/g, '    '))
 		// remove leading and trailing whitespace...
-		.trim()
-}
+		.trim() }
 
 
 var doWithRootAction = 
@@ -374,9 +371,7 @@ function(func){
 				|| MetaActions.getHandlerList)
 			.apply(this, args)
 
-		return func.apply(this, [handlers.pop()].concat(args))
-	}
-}
+		return func.apply(this, [handlers.pop()].concat(args)) } }
 
 
 // 
@@ -417,144 +412,142 @@ function(func){
 // NOTE: identifiers are resolved as attributes of the context...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
 // 		in a logical manner...
+
+// placeholders...
+var __Atom
+var __Argument
+
 var parseStringAction =
 module.parseStringAction =
-function(txt){
-	// split off the doc...
-	var c = txt.split('--')
-	var doc = (c[1] || '').trim()
-	// the actual code...
-	c = c[0].split(':')
+Object.assign(
+	// parser...
+	function(txt){
+		// split off the doc...
+		var c = txt.split('--')
+		var doc = (c[1] || '').trim()
+		// the actual code...
+		c = c[0].split(':')
 
-	// action and no default flag...
-	var action = c[0].trim()
-	var no_default = action.slice(-1) == '!'
-	action = no_default ? action.slice(0, -1) : action
+		// action and no default flag...
+		var action = c[0].trim()
+		var no_default = action.slice(-1) == '!'
+		action = no_default ? action.slice(0, -1) : action
 
-	// parse arguments...
-	var args = ((c[1] || '')
-			.match(RegExp([
-				// strings...
-				'"[^"]*"',
-				"'[^']*'",
-				'`[^`]*`',
+		// parse arguments...
+		var args = ((c[1] || '')
+				.match(RegExp([
+					// strings...
+					'"[^"]*"',
+					"'[^']*'",
+					'`[^`]*`',
 
-				// objects...
-				// XXX hack-ish...
-				'\\{[^\\}]*\\}',
+					// objects...
+					// XXX hack-ish...
+					'\\{[^\\}]*\\}',
 
-				// lists...
-				// XXX hack-ish...
-				'\\[[^\]]*\]',
+					// lists...
+					// XXX hack-ish...
+					'\\[[^\]]*\]',
 
-				// numbers...
-				'\\d+\\.\\d+|\\d+',
+					// numbers...
+					'\\d+\\.\\d+|\\d+',
 
-				// identifiers...
-				'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
+					// identifiers...
+					'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
 
-				// rest args...
-				'\\.\\.\\.',
+					// rest args...
+					'\\.\\.\\.',
 
-				// null...
-				'null',
-			].join('|'), 'gm')) 
-		|| [])
-		.map(function(e){
-			// argument placeholder...
-			return /^\.\.\.$/.test(e) ?
-					parseStringAction.ALLARGS
-				: /^\$[a-zA-Z0-9$@#_]*$/.test(e) ?
-					new parseStringAction.Argument(e.slice(1))
-				// idetifiers...
-				// NOTE: keep this last as it is the most general...
-				: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
-					new parseStringAction.Identifier(e)
-				: JSON.parse(e) })
+					// null...
+					'null',
+				].join('|'), 'gm')) 
+			|| [])
+			.map(function(e){
+				// argument placeholder...
+				return /^\.\.\.$/.test(e) ?
+						parseStringAction.ALLARGS
+					: /^\$[a-zA-Z0-9$@#_]*$/.test(e) ?
+						new parseStringAction.Argument(e.slice(1))
+					// idetifiers...
+					// NOTE: keep this last as it is the most general...
+					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
+						new parseStringAction.Identifier(e)
+					: JSON.parse(e) })
 
-	return {
-		action: action,
-		arguments: args,
-		doc: doc,
-		no_default: no_default,
-		stop_propagation: false,
+		return {
+			action: action,
+			arguments: args,
+			doc: doc,
+			no_default: no_default,
+			stop_propagation: false,
 
-		code: txt,
-	}
-}
+			code: txt,
+		}
+	},{
+		// atoms...
+		Atom: (__Atom = object.Constructor('Atom', {
+			__init__: function(value){
+				this.value = value },
+			valueOf: function(){ 
+				return this.value },
+		})),
+		Identifier: object.Constructor('Identifier', 
+			Object.create(__Atom.prototype)),
+		Argument: (__Argument = object.Constructor('Argument', 
+			Object.create(__Atom.prototype))),
+		ALLARGS: new __Argument('...'),
 
-parseStringAction.Identifier = 
-object.Constructor(
-	'Identifier', 
-	{
-		__init__: function(value){
-			this.value = value
-		},
-		valueOf: function(){ return this.value },
+		// general API...
+		resolveArgs: function(context, action_args, call_args){
+			var that = this
+			var rest
+			var args = [].slice.call(action_args)
+				// merge args...
+				.map(function(arg, i){
+					return arg instanceof that.Argument ?
+						(arg === that.ALLARGS ?
+							(function(){
+								rest = i
+								return arg
+							})()
+							: call_args[parseInt(arg.value)])
+						// resolve idents...
+						: arg instanceof that.Identifier ?
+							context[arg.value]
+						: arg })
+			rest != null
+				&& args.splice(rest, 1, ...call_args)
+			return args },
+
+		// XXX should this break if action does not exist???
+		callAction: function(context, action, ...args){
+			action = typeof(action) == typeof('str') ? 
+				this(action) 
+				: action
+			// XXX should this break if action does not exist???
+			return context[action.action] instanceof Function ? 
+				context[action.action]
+					.apply(context, this.resolveArgs(context, action.arguments, args))
+				// action not found or is not callable... (XXX)
+				: undefined },
+		applyAction: function(context, action, args){
+			return this.callAction(context, action, ...args) },
+
+		// XXX make this stricter...
+		isStringAction: function(txt){
+			try{
+				var parsed = typeof(txt) == typeof('str')
+					&& (this.parseStringAction || parseStringAction)(txt)
+				return parsed 
+					&& /[a-zA-Z_][a-zA-Z0-9_]*/.test(parsed.action)
+			} catch(e){
+				return false } },
 	})
-parseStringAction.Argument = 
-object.Constructor(
-	'Argument', 
-	{
-		__init__: function(value){
-			this.value = value
-		},
-		valueOf: function(){ return this.value },
-	})
-parseStringAction.ALLARGS = new parseStringAction.Argument('...')
 
-parseStringAction.resolveArgs = function(context, action_args, call_args){
-	var that = this
-	var rest
-	var args = [].slice.call(action_args)
-		// merge args...
-		.map(function(arg, i){
-			return arg instanceof that.Argument ?
-				(arg === that.ALLARGS ?
-					(function(){
-						rest = i
-						return arg
-					})()
-					: call_args[parseInt(arg.value)])
-				// resolve idents...
-				: arg instanceof that.Identifier ?
-					context[arg.value]
-				: arg })
-	rest != null
-		&& args.splice(rest, 1, ...call_args)
-
-	return args
-}
-
-// XXX should this break if action does not exist???
-parseStringAction.callAction = function(context, action, ...args){
-	action = typeof(action) == typeof('str') ? 
-		this(action) 
-		: action
-	// XXX should this break if action does not exist???
-	return context[action.action] instanceof Function ? 
-		context[action.action]
-			.apply(context, this.resolveArgs(context, action.arguments, args))
-		// action not found or is not callable... (XXX)
-		: undefined
-}
-parseStringAction.applyAction = function(context, action, args){
-	return this.callAction(context, action, ...args) }
-
-
-// XXX make this stricter...
+// shorthand...
 var isStringAction =
 module.isStringAction =
-function(txt){
-	try{
-		var parsed = typeof(txt) == typeof('str')
-			&& (this.parseStringAction || parseStringAction)(txt)
-		return parsed 
-			&& /[a-zA-Z_][a-zA-Z0-9_]*/.test(parsed.action)
-	} catch(e){
-		return false
-	}
-}
+	parseStringAction.isStringAction
 
 
 
