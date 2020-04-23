@@ -461,7 +461,7 @@ in the following order:
   really necessary.
 
 
-#### 3. `.__call__` action / handler
+#### 3. `.__actioncall__` action / handler
 
 This action if defined is called for every action called. It behaves
 like any other action but with a fixed signature, it always receives 
@@ -471,7 +471,7 @@ the second arguments, and as normal a result on the post phase.
 **Notes:**
 - it is not necessary to define the actual action, binding to a
   handler will also work.
-- one should not call actions directly from within a __call__ 
+- one should not call actions directly from within a __actioncall__ 
   handler as that will result in infinite recursion.  
 - one should use this with extreme care as this will introduce 
   an overhead on all the actions if not done carefully.
