@@ -1019,7 +1019,8 @@ object.Constructor('Action', {
 		}
 
 		// make introspection be a bit better...
-		meth.toString = func.toString.bind(func)
+		meth.toString = function(){
+			return normalizeTabs(func.toString()) }
 
 		// setup attrs...
 		Object.assign(meth, attrs)
