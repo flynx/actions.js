@@ -336,30 +336,7 @@ module.UNDEFINED = ASIS(undefined)
 /*********************************************************************/
 // helpers...
 
-var normalizeTabs = function(str){
-	str = str.split(/\n/g)
-	// get min number of leading tabs...
-	var i = str.length == 2 && /^\t/.test(str[1]) ?
-		str[1].split(/^(\t+)/)[1].length - 1
-		: Math.min.apply(null, str
-			// skip first line...
-			.slice(1)
-			// skip empty strings...
-			.filter(function(l){ return l.trim() != '' })
-			// count leading tabs...
-			.map(function(l){ 
-				return /^\t+/.test(l) ? 
-					l.split(/^(\t+)/)[1].length
-					: 0}))
-	return (str[0] +'\n' 
-		+ str
-			.slice(1)
-			// trim leading tabs...
-			.map(function(l){ return l.slice(i) }).join('\n')
-			// replace tabs...
-			.replace(/\t/g, '    '))
-		// remove leading and trailing whitespace...
-		.trim() }
+var normalizeIndent = object.normalizeIndent
 
 
 var doWithRootAction = 
@@ -1020,7 +997,7 @@ object.Constructor('Action', {
 
 		// make introspection be a bit better...
 		meth.toString = function(){
-			return normalizeTabs(func.toString()) }
+			return normalizeIndent(func.toString()) }
 
 		// setup attrs...
 		Object.assign(meth, attrs)
@@ -2206,19 +2183,19 @@ module.MetaActions = {
 
 		var getTags = function(handler, p){
 			return (handler.event_tag ? 
-					normalizeTabs('// Event tag: ' + handler.event_tag) + p 
+					normalizeIndent('// Event tag: ' + handler.event_tag) + p 
 					: '')
 				+ (handler.source_tag ? 
-					normalizeTabs('// Source tag: ' + handler.source_tag) + p 
+					normalizeIndent('// Source tag: ' + handler.source_tag) + p 
 					: '') }
 		var getDoc = function(cur, p){
 			return (cur.doc ? 
 					'// --- .doc ---'+p
-					+'// '+ normalizeTabs(cur.doc).replace(/\n/g, p+'// ') +p 
+					+'// '+ normalizeIndent(cur.doc).replace(/\n/g, p+'// ') +p 
 					: '')
 				+ (cur.long_doc ? 
 					'// --- .long_doc ---'+p
-					+'// '+ normalizeTabs(cur.long_doc).replace(/\n/g, p+'// ') + p 
+					+'// '+ normalizeIndent(cur.long_doc).replace(/\n/g, p+'// ') + p 
 					: '') }
 
 		var handler = function(p){
@@ -2237,7 +2214,7 @@ module.MetaActions = {
 					+ getTags(cur.pre, p)
 					+ getDoc(cur, p)
 					// code...
-					+ normalizeTabs(cur.pre.toString()).replace(/\n/g, p)
+					+ normalizeIndent(cur.pre.toString()).replace(/\n/g, p)
 					+ p
 			}
 
@@ -2250,7 +2227,7 @@ module.MetaActions = {
 					+ getTags(cur.post, p)
 					+ getDoc(cur, p)
 					// code...
-					+ normalizeTabs(cur.post.toString()).replace(/\n/g, p)
+					+ normalizeIndent(cur.post.toString()).replace(/\n/g, p)
 			}
 		}
 
@@ -2275,11 +2252,11 @@ module.MetaActions = {
 				p.append($('<pre>').html(
 					// meta...
 					(cur.pre.event_tag ? 
-						normalizeTabs('// Event tag: ' + cur.pre.event_tag) + p : '')
+						normalizeIndent('// Event tag: ' + cur.pre.event_tag) + p : '')
 					+ (cur.pre.source_tag ? 
-						normalizeTabs('// Source tag: ' + cur.pre.source_tag) + p : '')
+						normalizeIndent('// Source tag: ' + cur.pre.source_tag) + p : '')
 					// code...
-					+ normalizeTabs(cur.pre.toString())
+					+ normalizeIndent(cur.pre.toString())
 						.replace(/return/g, '<b>return</b>')))
 			}
 
@@ -2289,11 +2266,11 @@ module.MetaActions = {
 				p.append($('<pre>').html(
 					// meta...
 					(cur.post.event_tag ? 
-						normalizeTabs('// Event source tag: ' + cur.post.event_tag) + p : '')
+						normalizeIndent('// Event source tag: ' + cur.post.event_tag) + p : '')
 					+ (cur.post.source_tag ? 
-						normalizeTabs('// Source tag: ' + cur.post.source_tag) + p : '')
+						normalizeIndent('// Source tag: ' + cur.post.source_tag) + p : '')
 					// code...
-					+ normalizeTabs(cur.post.toString())))
+					+ normalizeIndent(cur.post.toString())))
 			}
 		}
 
