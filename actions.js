@@ -249,7 +249,7 @@ module.UNDEFINED = ASIS(undefined)
 //		really necessary.
 //
 //
-// 3) .__call__ action / handler
+// 3) .__actioncall__ action / handler
 // 	This action if defined is called for every action called. It behaves
 // 	like any other action but with a fixed signature, it always receives 
 // 	the action name as first argument and a list of action arguments as
@@ -257,7 +257,7 @@ module.UNDEFINED = ASIS(undefined)
 //
 // 	NOTE: it is not necessary to define the actual action, binding to a
 // 		handler will also work.
-// 	NOTE: one should not call actions directly from within a __call__ 
+// 	NOTE: one should not call actions directly from within a __actioncall__ 
 // 		handler as that will result in infinite recursion.
 // 		XXX need a way to prevent this...
 // 	NOTE: one should use this with extreme care as this will introduce 
@@ -374,6 +374,7 @@ function(func){
 		return func.apply(this, [handlers.pop()].concat(args)) } }
 
 
+// String action parser/runner...
 // 
 // Syntax:
 // 		ALIAS ::= 
@@ -410,6 +411,7 @@ function(func){
 //		}
 // 		
 // NOTE: identifiers are resolved as attributes of the context...
+// NOTE: this is a stateless object...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
 // 		in a logical manner...
 
@@ -482,8 +484,10 @@ Object.assign(
 			stop_propagation: false,
 
 			code: txt,
-		}
-	},{
+		} }, 
+
+	// API and utils...
+	{
 		// atoms...
 		Atom: (__Atom = object.Constructor('Atom', {
 			__init__: function(value){
@@ -501,7 +505,7 @@ Object.assign(
 		resolveArgs: function(context, action_args, call_args){
 			var that = this
 			var rest
-			var args = [].slice.call(action_args)
+			var args = [...action_args]
 				// merge args...
 				.map(function(arg, i){
 					return arg instanceof that.Argument ?
@@ -659,334 +663,371 @@ module.isStringAction =
 // 		...
 // XXX might be a good idea to add an option to return the full results...
 var Action =
-module.Action =
-function Action(name, doc, ldoc, attrs, func){
-	// we got called without a 'new'...
-	if(this == null || this.constructor !== Action){
-		// XXX using something like .apply(.., arguemnts) would be more
-		// 		generel but have no time to figure out how to pass it 
-		// 		to new without the later complaining...
-		return new Action(name, doc, ldoc, attrs, func)
-	}
+module.Action = 
+object.Constructor('Action', {
+	__proto__: Function,
 
-	// prevent action overloading...
-	if(this[name] != null){
-		throw 'action "'+name+'" already exists.'
-	}
+	// Control how an action handles returned promises...
+	// 
+	// Possible values:
+	// 	true	- if an action returns a promise then trigger the post phase
+	// 				after that promise is resolved / rejected... (default)
+	// 	false	- handle promises like any other returned value.
+	// 	
+	// 	
+	// NOTE: .await is only checked in the root action, thus it can not be 
+	// 		overloaded by extending actions.
+	// 		This is done intentionally, as the action actually returning a 
+	// 		value (and defining the signature) is the only one responsible 
+	// 		for controlling how it's handled.
+	// 	
+	// For implmentation see: Action.prototype.chainApply(..)
+	// 
+	// XXX should we be able to set this in the context???
+	// XXX can we use 'await'???
+	await: true,
 
-	// create the actual instance we will be returning...
-	var meth = function(){
-		return meth.chainApply(this, null, arguments) }
-	meth.__proto__ = this.__proto__
 
-	// precess args...
-	var args = doc instanceof Array ? 
-		doc 
-		: [].slice.call(arguments)
-			.filter(function(e){ return e !== undefined })
-			.slice(1)
-	func = args.pop()
-	last = args[args.length-1]
-	attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
-	doc = typeof(args[0]) == typeof('str') ? args.shift() 
-		: func.doc ? func.doc
-		: null
-	ldoc = typeof(args[0]) == typeof('str') ? args.shift() 
-		: func.long_doc ? func.long_doc
-		: null
+	// pre/post stage runners...
+	//
+	// 	.pre(context, args)	
+	// 		-> data
+	//
+	// 	.post(context, data)
+	// 		-> result
+	// 		
+	// 		
+	// Call data format:
+	// 	{
+	//		arguments: args,
+	//
+	//		wrapper: call_wrapper,
+	//		handlers: handlers,
+	//
+	//		result: res,
+	// 	}
+	//
+	//
+	// External methods (required):
+	// 	.getHandlers(..)			resolved from: context, MetaActions
+	//
+	//
+	// External methods (optoinal):
+	// 	.__actioncall__(..)			resolved from: context
+	// 	.preActionHandler(..)		resolved from: context, MetaActions
+	//
+	//
+	// Special cases:
+	// 	- An action is referenced via a different name than is in its .name
+	// 		this can occur if:
+	// 			1) an action is renamed but its .name is not
+	// 			2) an action is created and stored with a different name
+	// 				var f = new Action('m', function(){ ... })
+	//
+	//
+	// NOTE: All the defaults should be handled by the pre stage, post will 
+	// 		process data assuming that it is correct.
+	// NOTE: .post(..) will not wait for returned promises to resolve, use 
+	// 		.chainApply(..) / ,chainCall(..) instead, or handle .result 
+	// 		manually...
+	// 		(see: Action.prototype.chainApply(..))
+	// XXX revise the structure....
+	// 		...is it a better idea to define action methods in an object 
+	// 		and assign that???
+	pre: function(context, args){
+		var that = this
+		args = args || []
 
-	// populate the action attributes...
-	//meth.name = name
-	Object.defineProperty(meth, 'name', {
-		value: name,
-	})
-	func.doc = meth.doc = doc
-	func.long_doc = meth.long_doc = ldoc
+		// prepare for after calls...
+		// XXX this may pose problems with concurency...
+		// XXX do not like that this forces exception rethrowing...
+		// XXX EXPERIMENTAL (after calls)...
+		context.__action_after_running = [
+			// nested call...
+			context.__action_after_running,
+			// top list...
+			(context.__action_after_running || [null, []])[1],
+		]
 
-	meth.func = func
+		var res = context
+		var outer = this.name
 
-	if(func.name == '<action-name>'){
-		Object.defineProperty(func, 'name', {
+		// get the handler list...
+		var getHandlers = context.getHandlers 
+			|| MetaActions.getHandlers
+		var handlers = getHandlers.call(context, outer)
+
+		// handle cases where .func is not in handlers...
+		//
+		// NOTE: see Special cases in method doc above...
+		if(handlers.length == 0 
+				|| handlers.filter(function(h){ 
+					return h.pre === that.func }).length == 0){
+			var cur = {
+				pre: this.func,
+			}
+			this.doc
+				&& (cur.doc = this.doc)
+			this.long_doc
+				&& (cur.long_doc = this.long_doc)
+			handlers.unshift(cur)
+		}
+
+		// special case: see if we need to handle the call without handlers...
+		var preActionHandler = context.preActionHandler 
+			|| MetaActions.preActionHandler
+		if(preActionHandler){
+			var res = preActionHandler.call(context, outer, handlers, args)
+			if(res !== undefined){
+				return res } }
+
+		var call_wrapper = outer != '__actioncall__' ? 
+			getHandlers.call(context, '__actioncall__') 
+			: []
+
+		try {
+			// wrapper handlers: pre phase...
+			call_wrapper = call_wrapper
+				.map(function(a){
+					if(a.pre){
+						res = a.pre.call(context, outer, args)
+
+						// if a handler returns a function register is as a post
+						// handler...
+						if(res 
+								&& res !== context 
+								&& res instanceof Function){
+							a.post = res
+						}
+					}
+					return a })
+
+			// handlers: pre phase...
+			handlers
+				// NOTE: current action will get included and called by the code 
+				// 		above and below, so no need to explicitly call func...
+				// NOTE: pre handlers are called FIFO, i.e. the last defined first... 
+				.map(function(a){
+					if(a.pre){
+						res = a.pre.apply(context, args)
+
+						// if a handler returns a function register is as a post
+						// handler...
+						if(res 
+								&& res !== context 
+								&& res instanceof Function){
+							a.post = res
+
+							// reset the result...
+							// NOTE: this is the only difference between this 
+							// 		and wrapper stages...
+							res = context
+						}
+					}
+					return a })
+
+		// XXX EXPERIMENTAL (after calls)...
+		} catch(error){
+			// XXX should we unwind this???
+			delete context.__action_after_running
+			throw error
+		}
+
+		// return context if nothing specific is returned...
+		res = res === undefined ? context 
+			: res instanceof ASIS ? res.value
+			// XXX returning an explicit [undefined]...
+			//: res instanceof Array
+			//		&& res.length == 1
+			//		&& res.indexOf(undefined) == 0 ?
+			//	undefined
+			: res
+
+		return {
+			arguments: args,
+
+			wrapper: call_wrapper,
+			handlers: handlers,
+
+			result: res,
+		}
+	},
+	post: function(context, data){
+		var res = data.result
+
+		var args = data.arguments || []
+		// the post handlers get the result as the first argument...
+		args.splice(0, 0, res)
+
+		var outer = this.name
+
+		try {
+			// handlers: post phase...
+			data.handlers && data.handlers
+				// NOTE: post handlers are called LIFO -- last defined last...
+				.reverse()
+				.forEach(function(a){
+					a.post
+						&& a.post.apply(context, args)
+				})
+
+			// wrapper handlers: post phase...
+			data.wrapper && data.wrapper
+				// NOTE: post handlers are called LIFO -- last defined last...
+				.reverse()
+				.forEach(function(a){
+					a.post
+						&& a.post.call(context, res, outer, args.slice(1))
+				})
+
+		// XXX EXPERIMENTAL (after calls)...
+		} catch(error){
+			// should we unwind this???
+			delete context.__action_after_running
+			throw error
+		}
+
+		// handle after calls...
+		// XXX EXPERIMENTAL (after calls)...
+		;(context.__action_after_running || [])
+			.slice(2)
+			.forEach(function(func){
+				func.call(context) })
+		// top calls...
+		if(context.__action_after_running){
+			if(context.__action_after_running[0] == null){
+				;(context.__action_after_running[1] || [])
+					.forEach(function(func){
+						func.call(context) })
+				delete context.__action_after_running
+			// back to prev level...
+			} else {
+				context.__action_after_running = context.__action_after_running[0]
+			}
+		}
+
+		return res
+	},
+
+
+	// chaining...
+	// 
+	// For docs see: MetaActions.chainApply(..) and the base module doc.
+	chainApply: function(context, inner, args){
+		args = [...(args || [])]
+		var outer = this.name
+
+		var data = this.pre(context, args)
+
+		// call the inner action/function if preset....
+		// NOTE: this is slightly different (see docs) to what happens in 
+		// 		.pre(..)/.post(..), thus we are doing this separately and 
+		// 		not reusing existing code...
+		if(inner){
+			var res = inner instanceof Function ? 
+					inner.apply(context, args)
+				: inner instanceof Array && inner.length > 0 ? 
+					context[inner.pop()].chainApply(context, inner, args)
+				: typeof(inner) == typeof('str') ?
+					context[inner].chainApply(context, null, args)
+				: undefined
+
+			// call the resulting function...
+			if(res instanceof Function){
+				res.apply(context, [context].concat(args))
+				data.result = context
+
+			// push the inner result into the chain...
+			} else if(res !== undefined){
+				data.result = res
+			}
+		}
+
+		// returned promise -> await for resolve/error...
+		// XXX should we be able to set this in the context???
+		if(data.result instanceof Promise
+				&& (context.getRootActionAttr || MetaActions.getRootActionAttr)
+					.call(context, this.name, 'await') ){
+			var that = this
+			return data.result
+				.then(function(){
+					return that.post(context, data) })
+				.catch(function(){
+					return that.post(context, data) })
+		}
+
+		return this.post(context, data)
+	},
+	chainCall: function(context, inner){
+		return this.chainApply(context, inner, [...arguments].slice(2)) },
+
+
+	// constructor...
+	//
+	// 	Action(<name>, <function>)
+	// 	Action(<name>[, <doc>[, <long-doc>]][, <attrs>,] <function>)
+	// 	Action(<name>, [ [<doc>[, <long-doc>]][, <attrs>,] <function> ])
+	// 		-> <action>
+	//
+	__new__: function Action(context, name, doc, ldoc, attrs, func){
+		// prevent action overloading...
+		// XXX do we need this???
+		//if(context != null && context[name] != null){
+		//	throw 'action "'+name+'" already exists.' }
+
+		// create the actual instance we will be returning...
+		var meth = function(){
+			return meth.chainApply(this, null, arguments) }
+		meth.__proto__ = this.__proto__
+
+		// precess args...
+		var args = doc instanceof Array ? 
+			doc 
+			: [...arguments]
+				.filter(function(e){ return e !== undefined })
+				.slice(1)
+		func = args.pop()
+		last = args[args.length-1]
+		attrs = (last != null && typeof(last) != typeof('str')) ? 
+			args.pop() 
+			: {}
+		doc = typeof(args[0]) == typeof('str') ? 
+				args.shift() 
+			: func.doc ? 
+				func.doc
+			: null
+		ldoc = typeof(args[0]) == typeof('str') ? 
+				args.shift() 
+			: func.long_doc ? 
+				func.long_doc
+			: null
+
+		// populate the action attributes...
+		//meth.name = name
+		Object.defineProperty(meth, 'name', {
 			value: name,
 		})
-	}
+		func.doc = meth.doc = doc
+		func.long_doc = meth.long_doc = ldoc
 
-	// make introspection be a bit better...
-	meth.toString = func.toString.bind(func)
+		meth.func = func
 
-	// setup attrs...
-	Object.assign(meth, attrs)
-	Object.assign(func, attrs)
-
-	return meth
-}
-// this will make action instances behave like real functions...
-Action.prototype.__proto__ = Function
-
-// The pre/post stage runners...
-//
-// 	.pre(context, args)	
-// 		-> data
-//
-// 	.post(context, data)
-// 		-> result
-// 		
-// 		
-// Call data format:
-// 	{
-//		arguments: args,
-//
-//		wrapper: call_wrapper,
-//		handlers: handlers,
-//
-//		result: res,
-// 	}
-//
-//
-// NOTE: All the defaults should be handled by the pre stage, post will 
-// 		process data assuming that it is correct.
-// NOTE: .post(..) will not wait for returned promises to resolve, use 
-// 		.chainApply(..) / ,chainCall(..) instead, or handle .result 
-// 		manually...
-// 		(see: Action.prototype.chainApply(..))
-//
-// XXX revise the structure....
-// 		...is it a better idea to define action methods in an object 
-// 		and assign that???
-Action.prototype.pre = function(context, args){
-	args = args || []
-
-	// prepare for after calls...
-	// XXX this may pose problems with concurency...
-	// XXX do not like that this forces exception rethrowing...
-	// XXX EXPERIMENTAL (after calls)...
-	context.__action_after_running = [
-		// nested call...
-		context.__action_after_running,
-		// top list...
-		(context.__action_after_running || [null, []])[1],
-	]
-
-	var res = context
-	var outer = this.name
-
-	// get the handler list...
-	var getHandlers = context.getHandlers || MetaActions.getHandlers
-	var handlers = getHandlers.call(context, outer)
-
-	// special case: see if we need to handle the call without handlers...
-	var preActionHandler = context.preActionHandler || MetaActions.preActionHandler
-	if(preActionHandler){
-		// XXX signature needs work...
-		var res = preActionHandler.call(context, outer, handlers, args)
-		if(res !== undefined){
-			return res
+		if(func.name == '<action-name>'){
+			Object.defineProperty(func, 'name', {
+				value: name,
+			})
 		}
-	}
 
-	var call_wrapper = outer != '__call__' ? 
-		getHandlers.call(context, '__call__') 
-		: []
+		// make introspection be a bit better...
+		meth.toString = func.toString.bind(func)
 
-	try {
-		// wrapper handlers: pre phase...
-		call_wrapper = call_wrapper
-			.map(function(a){
-				if(a.pre){
-					res = a.pre.call(context, outer, args)
+		// setup attrs...
+		Object.assign(meth, attrs)
+		Object.assign(func, attrs)
 
-					// if a handler returns a function register is as a post
-					// handler...
-					if(res 
-							&& res !== context 
-							&& res instanceof Function){
-						a.post = res
-					}
-				}
-				return a
-			})
-
-		// handlers: pre phase...
-		handlers
-			// NOTE: current action will get included and called by the code 
-			// 		above and below, so no need to explicitly call func...
-			// NOTE: pre handlers are called FIFO, i.e. the last defined first... 
-			.map(function(a){
-				if(a.pre){
-					res = a.pre.apply(context, args)
-
-					// if a handler returns a function register is as a post
-					// handler...
-					if(res 
-							&& res !== context 
-							&& res instanceof Function){
-						a.post = res
-
-						// reset the result...
-						// NOTE: this is the only difference between this 
-						// 		and wrapper stages...
-						res = context
-					}
-				}
-				return a
-			})
-
-	// XXX EXPERIMENTAL (after calls)...
-	} catch(error){
-		// XXX should we unwind this???
-		delete context.__action_after_running
-		throw error
-	}
-
-	// return context if nothing specific is returned...
-	res = res === undefined ? context 
-		: res instanceof ASIS ? res.value
-		// XXX returning an explicit [undefined]...
-		//: res instanceof Array
-		//		&& res.length == 1
-		//		&& res.indexOf(undefined) == 0 ?
-		//	undefined
-		: res
-
-	return {
-		arguments: args,
-
-		wrapper: call_wrapper,
-		handlers: handlers,
-
-		result: res,
-	}
-}
-Action.prototype.post = function(context, data){
-	var res = data.result
-
-	var args = data.arguments || []
-	// the post handlers get the result as the first argument...
-	args.splice(0, 0, res)
-
-	var outer = this.name
-
-	try {
-		// handlers: post phase...
-		data.handlers && data.handlers
-			// NOTE: post handlers are called LIFO -- last defined last...
-			.reverse()
-			.forEach(function(a){
-				a.post
-					&& a.post.apply(context, args)
-			})
-
-		// wrapper handlers: post phase...
-		data.wrapper && data.wrapper
-			// NOTE: post handlers are called LIFO -- last defined last...
-			.reverse()
-			.forEach(function(a){
-				a.post
-					&& a.post.call(context, res, outer, args.slice(1))
-			})
-
-	// XXX EXPERIMENTAL (after calls)...
-	} catch(error){
-		// should we unwind this???
-		delete context.__action_after_running
-		throw error
-	}
-
-	// handle after calls...
-	// XXX EXPERIMENTAL (after calls)...
-	;(context.__action_after_running || [])
-		.slice(2)
-		.forEach(function(func){
-			func.call(context) })
-	// top calls...
-	if(context.__action_after_running){
-		if(context.__action_after_running[0] == null){
-			;(context.__action_after_running[1] || [])
-				.forEach(function(func){
-					func.call(context) })
-			delete context.__action_after_running
-		// back to prev level...
-		} else {
-			context.__action_after_running = context.__action_after_running[0]
-		}
-	}
-
-	return res
-}
-
-
-// Control how an action handles returned promises...
-// 
-// Possible values:
-// 	true	- if an action returns a promise then trigger the post phase
-// 				after that promise is resolved / rejected... (default)
-// 	false	- handle promises like any other returned value.
-// 	
-// 	
-// NOTE: .await is only checked in the root action, thus it can not be 
-// 		overloaded by extending actions.
-// 		This is done intentionally, as the action actually returning a 
-// 		value (and defining the signature) is the only one responsible 
-// 		for controlling how it's handled.
-// 	
-// For implmentation see: Action.prototype.chainApply(..)
-// 
-// XXX should we be able to set this in the context???
-// XXX can we use 'await'???
-Action.prototype.await = true
-
-
-// Chaining...
-// 
-// For docs see: MetaActions.chainApply(..) and the base module doc.
-Action.prototype.chainApply = function(context, inner, args){
-	args = [].slice.call(args || [])
-	var outer = this.name
-
-	var data = this.pre(context, args)
-
-	// call the inner action/function if preset....
-	// NOTE: this is slightly different (see docs) to what happens in 
-	// 		.pre(..)/.post(..), thus we are doing this separately and 
-	// 		not reusing existing code...
-	if(inner){
-		var res = inner instanceof Function ? 
-				inner.apply(context, args)
-			: inner instanceof Array && inner.length > 0 ? 
-				context[inner.pop()].chainApply(context, inner, args)
-			: typeof(inner) == typeof('str') ?
-				context[inner].chainApply(context, null, args)
-			: undefined
-
-		// call the resulting function...
-		if(res instanceof Function){
-			res.apply(context, [context].concat(args))
-			data.result = context
-
-		// push the inner result into the chain...
-		} else if(res !== undefined){
-			data.result = res
-		}
-	}
-
-	// returned promise -> await for resolve/error...
-	// XXX should we be able to set this in the context???
-	if(data.result instanceof Promise
-			&& (context.getRootActionAttr || ActionSet.getRootActionAttr)
-				.call(context, this.name, 'await') ){
-		var that = this
-		return data.result
-			.then(function(){
-				return that.post(context, data) })
-			.catch(function(){
-				return that.post(context, data) })
-	}
-
-	return this.post(context, data)
-}
-Action.prototype.chainCall = function(context, inner){
-	return this.chainApply(context, inner, [...arguments].slice(2))
-}
+		return meth
+	},
+})
 
 
 
@@ -1010,65 +1051,61 @@ Action.prototype.chainCall = function(context, inner){
 // XXX should an alias return a value???
 var Alias =
 module.Alias =
-function Alias(alias, doc, ldoc, attrs, target){
-	// we got called without a 'new'...
-	if(this == null || this.constructor !== Alias){
-		// XXX using something like .apply(.., arguemnts) would be more
-		// 		generel but have no time to figure out how to pass it 
-		// 		to new without the later complaining...
-		return new Alias(alias, doc, ldoc, attrs, target)
-	}
+object.Constructor('Alias', {
+	__proto__: Action.prototype,
 
-	// precess args...
-	var args = doc instanceof Array ? 
-		doc 
-		: [].slice.call(arguments)
-			.filter(function(e){ return e !== undefined })
-			.slice(1)
-	target = args.pop()
-	last = args[args.length-1]
-	attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
-	doc = typeof(args[0]) == typeof('str') ? args.shift() : null
-	ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
+	__new__: function Alias(context, alias, doc, ldoc, attrs, target){
+		// precess args...
+		var args = doc instanceof Array ? 
+			doc 
+			: [...arguments]
+				.filter(function(e){ return e !== undefined })
+				.slice(1)
+		target = args.pop()
+		last = args[args.length-1]
+		attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
+		doc = typeof(args[0]) == typeof('str') ? args.shift() : null
+		ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
 
-	attrs.alias = target
+		attrs.alias = target
 
-	// NOTE: we are not parsing this directly here because the context
-	// 		may define a different .parseStringAction(..)
-	var parsed = typeof(target) == typeof('str') ? null : target
+		// NOTE: we are not parsing this directly here because the context
+		// 		may define a different .parseStringAction(..)
+		var parsed = typeof(target) == typeof('str') ? null : target
 
-	doc = (!doc && parsed) ? parsed.doc : doc
+		doc = (!doc && parsed) ? parsed.doc : doc
 
-	var func = function(){
-		// empty alias...
-		if(target == ''){
-			return
+		var func = function(){
+			// empty alias...
+			if(target == ''){
+				return
+			}
+			var that = this
+			var in_args = [...arguments]
+
+			var p = parsed 
+				|| (this.parseStringAction || parseStringAction)(target)
+
+			// XXX should an alias return a value???
+			//p.action in this ?
+			return p.action in this ?
+				(this.parseStringAction || parseStringAction).callAction(this, p, ...in_args)
+				// error...
+				: console.error(`${alias}: Unknown alias target action: ${p.action}`)
 		}
-		var that = this
-		var in_args = [].slice.call(arguments)
+		func.toString = function(){ 
+			return meth.alias.code || meth.alias }
 
-		var p = parsed || this.parseStringAction(target)
+		// make the action...
+		// XXX not sure this is the correct way to go...
+		var meth = this.__proto__.__new__.call(this, context, alias, doc, ldoc, attrs, func)
+		meth.__proto__ = this.__proto__
 
-		// XXX should an alias return a value???
-		//p.action in this ?
-		return p.action in this ?
-			this.parseStringAction.callAction(this, p, ...in_args)
-			// error...
-			: console.error(`${alias}: Unknown alias target action: ${p.action}`)
-	}
-	func.toString = function(){ 
-		return meth.alias.code || meth.alias }
+		meth.func.alias = target
 
-	// make the action...
-	var meth = Action(alias, doc, ldoc, attrs, func)
-	meth.__proto__ = this.__proto__
-
-	meth.func.alias = target
-
-	return meth
-}
-// inherit from Action...
-Alias.prototype.__proto__ = Action.prototype
+		return meth
+	},
+})
 
 
 
@@ -1180,7 +1217,7 @@ module.MetaActions = {
 	// 	- Local action function (.func)
 	// 	- if an alias look in the target...
 	// 	- repeat for .__proto__ (until top of MRO)
-	// 	- repeat for '__call__' special action (XXX EXPERIMENTAL)
+	// 	- repeat for '__actioncall__' special action (XXX EXPERIMENTAL)
 	//
 	//
 	// NOTE: this will get attribute set both on the action object and 
@@ -1201,7 +1238,7 @@ module.MetaActions = {
 	// 				modifyAction(function(){ ... })],
 	//
 	// XXX document...
-	// XXX add option to to enable/disable look in .__call__... 
+	// XXX add option to to enable/disable look in .__actioncall__... 
 	getActionAttr: function(action, attr){
 		var cur = this
 
@@ -1230,9 +1267,9 @@ module.MetaActions = {
 			cur = cur.__proto__
 		}
 
-		// search .__call__ action...
-		if(cur[action] != null && action != '__call__'){
-			return this.getActionAttr('__call__', attr)
+		// search .__actioncall__ action...
+		if(cur[action] != null && action != '__actioncall__'){
+			return this.getActionAttr('__actioncall__', attr)
 		}
 	},
 
@@ -1535,9 +1572,7 @@ module.MetaActions = {
 				a.long_doc
 					&& (res.long_doc = a.long_doc)
 
-				return res
-			})
-	},
+				return res }) },
 
 	// Handler for cases when we need to avoid the pre/post handlers...
 	//
@@ -2283,7 +2318,7 @@ object.Constructor('ActionSet', MetaActions)
 
 
 
-// An action set...
+// An action set constructor...
 //
 //	Actions(<object>)
 //	Actions(<prototype>, <object>)
@@ -2387,7 +2422,7 @@ function Actions(a, b){
 var mix =
 module.mix = 
 function(){
-	var args = [].slice.call(arguments)
+	var args = [...arguments]
 	var res = {}
 
 	// special case: if MetaActions is in the args then inherit the root
