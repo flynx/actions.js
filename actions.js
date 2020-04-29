@@ -238,7 +238,7 @@ module.UNDEFINED = ASIS(undefined)
 //
 // 	Action(<name>, <function>)
 // 	Action(<name>[, <doc>[, <long-doc>]][, <attrs>,] <function>)
-// 	Action(<name>, [ [<doc>[, <long-doc>]][, <attrs>,] <function> ])
+// 	Action(<name>[, [<doc>[, <long-doc>]][, <attrs>,] <function> ])
 // 		-> <action>
 // 	
 //
