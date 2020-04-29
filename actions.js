@@ -829,13 +829,16 @@ module.MetaActions = {
 
 	// List aliases...
 	//
-	// NOTE: this will only show the aliases local to this.
 	get aliases(){
 		var that = this
 		return this.actions
 			.filter(function(n){ 
-				return that.hasOwnProperty(n)
-					&& that[n] instanceof Alias }) },
+				return that[n] instanceof Alias }) },
+	get localAliases(){
+		var that = this
+		return this.aliases
+			.filter(function(n){
+				return that.hasOwnProperty(n) })},
 
 	// XXX move this to the right spot...
 	parseStringAction: parseStringAction,
