@@ -646,7 +646,7 @@ object.Constructor('Action', {
 	// 	Action(<name>, [ [<doc>[, <long-doc>]][, <attrs>,] <function> ])
 	// 		-> <action>
 	//
-	__new__: function Action(context, name, doc, ldoc, attrs, func){
+	__new__: function(context, name, doc, ldoc, attrs, func){
 		// prevent action overloading...
 		// XXX do we need this???
 		//if(context != null && context[name] != null){
@@ -661,8 +661,8 @@ object.Constructor('Action', {
 		var args = doc instanceof Array ? 
 			doc 
 			: [...arguments]
+				.slice(2)
 				.filter(function(e){ return e !== undefined })
-				.slice(1)
 		func = args.pop()
 		last = args[args.length-1]
 		attrs = (last != null && typeof(last) != typeof('str')) ? 
@@ -732,26 +732,36 @@ module.Alias =
 object.Constructor('Alias', {
 	__proto__: Action.prototype,
 
-	__new__: function Alias(context, alias, doc, ldoc, attrs, target){
+	__new__: function(context, alias, doc, ldoc, attrs, target){
 		// precess args...
 		var args = doc instanceof Array ? 
 			doc 
 			: [...arguments]
+				.slice(2)
 				.filter(function(e){ return e !== undefined })
-				.slice(1)
 		target = args.pop()
 		last = args[args.length-1]
-		attrs = last != null && typeof(last) != typeof('str') ? args.pop() : {}
-		doc = typeof(args[0]) == typeof('str') ? args.shift() : null
-		ldoc = typeof(args[0]) == typeof('str') ? args.shift() : null
+		attrs = (last != null && typeof(last) != typeof('str')) ? 
+			args.pop() 
+			: {}
+		doc = typeof(args[0]) == typeof('str') ? 
+			args.shift() 
+			: null
+		ldoc = typeof(args[0]) == typeof('str') ? 
+			args.shift() 
+			: null
 
 		attrs.alias = target
 
 		// NOTE: we are not parsing this directly here because the context
 		// 		may define a different .parseStringAction(..)
-		var parsed = typeof(target) == typeof('str') ? null : target
+		var parsed = typeof(target) == typeof('str') ? 
+			null 
+			: target
 
-		doc = (!doc && parsed) ? parsed.doc : doc
+		doc = (!doc && parsed) ? 
+			parsed.doc 
+			: doc
 
 		var func = function(){
 			// empty alias...
@@ -769,15 +779,13 @@ object.Constructor('Alias', {
 			return p.action in this ?
 				(this.parseStringAction || parseStringAction).callAction(this, p, ...in_args)
 				// error...
-				: console.error(`${alias}: Unknown alias target action: ${p.action}`)
-		}
+				: console.error(`${alias}: Unknown alias target action: ${p.action}`) }
 		func.toString = function(){ 
 			return meth.alias.code || meth.alias }
 
 		// make the action...
-		// XXX not sure this is the correct way to go...
-		var meth = this.__proto__.__new__.call(this, context, alias, doc, ldoc, attrs, func)
-		meth.__proto__ = this.__proto__
+		var meth = object.parentCall(Alias.prototype.__new__, this, context, alias, doc, ldoc, attrs, func)
+		//meth.__proto__ = this.__proto__
 
 		meth.func.alias = target
 
