@@ -527,8 +527,7 @@ object.Constructor('Action', {
 			handlers: handlers,
 
 			result: res,
-		}
-	},
+		} },
 	post: function(context, data){
 		var res = data.result
 
@@ -583,8 +582,7 @@ object.Constructor('Action', {
 			}
 		}
 
-		return res
-	},
+		return res },
 
 
 	// chaining...
@@ -633,8 +631,7 @@ object.Constructor('Action', {
 					return that.post(context, data) })
 		}
 
-		return this.post(context, data)
-	},
+		return this.post(context, data) },
 	chainCall: function(context, inner){
 		return this.chainApply(context, inner, [...arguments].slice(2)) },
 
@@ -703,8 +700,7 @@ object.Constructor('Action', {
 		Object.assign(meth, attrs)
 		Object.assign(func, attrs)
 
-		return meth
-	},
+		return meth },
 })
 
 
@@ -784,8 +780,7 @@ object.Constructor('Alias', {
 
 		meth.func.alias = target
 
-		return meth
-	},
+		return meth },
 })
 
 
@@ -823,8 +818,7 @@ module.MetaActions = {
 				res.push(k)
 			}
 		}
-		return res
-	},
+		return res },
 
 
 	// List aliases...
@@ -886,12 +880,8 @@ module.MetaActions = {
 
 		// set alias...
 		} else {
-			//var parsed = typeof(target) == typeof('str') ?
-			//	this.parseStringAction(target)
-			//	: target
-			this[alias] = Alias.apply(null, arguments)
-		}
-	}),
+			this[alias] = Alias(...arguments)
+		} }),
 
 
 	// Get action attribute...
@@ -1020,8 +1010,7 @@ module.MetaActions = {
 				cur = cur.__proto__
 			}
 		})
-		return res
-	},
+		return res },
 
 	getPath: function(actions){
 		var res = {}
@@ -1046,8 +1035,7 @@ module.MetaActions = {
 
 			res[(doc && doc.replace(/[\\\/]$/, '/'+n)) || n] = [n, doc, long_doc]
 		})
-		return res
-	},
+		return res },
 
 
 	// Toggle handler cache...
@@ -1119,8 +1107,7 @@ module.MetaActions = {
 		}
 
 		// XXX this is not the handler protocol...
-		return this
-	},
+		return this },
 
 	// Rest handler cache...
 	// 	
@@ -1156,8 +1143,7 @@ module.MetaActions = {
 				delete cache[name]
 			}
 		}
-		return this
-	},
+		return this },
 
 	// Get action handlers from the inheritance chain...
 	//
@@ -1214,8 +1200,7 @@ module.MetaActions = {
 			cache[name] = handlers
 		}
 
-		return handlers
-	},
+		return handlers },
 
 	// Get structured action handler definitions...
 	//
@@ -1355,8 +1340,7 @@ module.MetaActions = {
 			}
 		})
 
-		return this
-	},
+		return this },
 
 	// Remove an action callback...
 	//
@@ -1430,8 +1414,7 @@ module.MetaActions = {
 			})
 		}
 
-		return this
-	},
+		return this },
 
 	// Register an action callback that will only fire once per event...
 	//
@@ -1462,8 +1445,7 @@ module.MetaActions = {
 			that.on(action, tag, handler)
 		})
 
-		return this
-	},
+		return this },
 
 	// XXX EXPERIMENTAL (after calls)...
 	isActionRunning: function(){
@@ -1494,8 +1476,7 @@ module.MetaActions = {
 			: this.__action_after_running)
 			.push(func) 
 
-		return this
-	},
+		return this },
 
 	// Apply/call a function/action "inside" an action...
 	//
@@ -1590,8 +1571,12 @@ module.MetaActions = {
 
 	// Get action/method resolution order...
 	//
-	// 	List mixin tags...
+	// 	List mixin tags if present, else objects...
 	// 	.mro()
+	// 	.mro('tag-object')
+	// 		-> tags
+	//
+	// 	List mixin tags...
 	// 	.mro('tag')
 	// 		-> tags
 	//
@@ -1605,18 +1590,21 @@ module.MetaActions = {
 	//
 	// NOTE: this will return the full MRO including Object.prototype
 	mro: function(target){
-		target = target || 'tag'
+		target = target || 'tag-object'
 		var res = []
 		var cur = this
 		while(cur != null){
-			res.push(target == 'tag' ? cur.__mixin_tag
-				: target == 'object' ? cur
+			res.push(target == 'tag-object' ? 
+					cur.__mixin_tag || cur
+				: target == 'tag' ? 
+					cur.__mixin_tag
+				: target == 'object' ? 
+					cur
 				: [cur.__mixin_tag, cur])
 			// go to next item in chain...
 			cur = cur.__proto__
 		}
-		return res
-	},
+		return res },
 	
 	// Get mixin object in inheritance chain...
 	//
@@ -1633,8 +1621,7 @@ module.MetaActions = {
 			.shift()
 		return pre ?
 			mro[mro.indexOf(res)-1]
-			: res
-	},
+			: res },
 
 	// Mixin a set of actions into this...
 	//
@@ -1719,8 +1706,7 @@ module.MetaActions = {
 			}
 		})
 
-		return this
-	},
+		return this },
 
 	// Same as .inlineMixin(..) but isolates a mixin in a seporate object
 	// in the inheritance chain...
@@ -1744,8 +1730,7 @@ module.MetaActions = {
 
 		this.__proto__ = proto
 
-		return this
-	},
+		return this },
 
 	// Mixin from after target in the mro...
 	//
@@ -1754,8 +1739,7 @@ module.MetaActions = {
 		this
 			.getMixin(target)
 			.mixin(from, options)
-		return this
-	},
+		return this },
 
 	// Mixin a set of local actions into an object...
 	//
@@ -1808,8 +1792,7 @@ module.MetaActions = {
 			}
 		})
 
-		return this
-	},
+		return this },
 
 	// This is similar in effect but different in mechanics to .inlineMixout(..)
 	//
@@ -1819,16 +1802,13 @@ module.MetaActions = {
 	mixout: function(from){
 		var o = this.getMixin(from, true)
 		var target = null
-
 		// pop the mixin off the chain...
 		if(o != null){
 			target = o.__proto__
 			o.__proto__ = o.__proto__.__proto__
 			this.resetHandlerCache()
 		}
-
-		return target
-	},
+		return target },
 
 	// Remove a set of local mixed in actions from object...
 	//
@@ -1852,8 +1832,7 @@ module.MetaActions = {
 				o.config = Object.create(this.config)
 			}
 		}
-		return o
-	},
+		return o },
 
 	getHandlerSourceTags: function(name){
 		return this.getHandlers(name)
@@ -1873,9 +1852,12 @@ module.MetaActions = {
 	// This is here simply as a utility function, to enable running code 
 	// in a concatinative manner without interruption...
 	run: function(func){
-		var res = func ? func.call(this) : undefined
-		return res === undefined ? this : res
-	},
+		var res = func ? 
+			func.call(this) 
+			: undefined
+		return res === undefined ? 
+			this 
+			: res },
 
 
 	// doc generators...
@@ -1940,8 +1922,7 @@ module.MetaActions = {
 
 		handler('\n|')
 
-		return str
-	},
+		return str },
 	getHandlerDocHTML: function(name){
 		var lst = this.getHandlers(name)
 		var res = $('<div class="action">')
@@ -1983,17 +1964,15 @@ module.MetaActions = {
 
 		handler(res)
 
-		return res
-	},
+		return res },
 
 
 	// This will create a .config in instances...
 	// NOTE: this makes Actions compatible with lib/object.js...
 	__init__: function(){
-		if(this.__proto__.config && !Object.hasOwnProperty(this, 'config')){
-			this.config = Object.create(this.__proto__.config)
-		}
-	},
+		this.__proto__.config 
+			&& !Object.hasOwnProperty(this, 'config')
+			&& (this.config = Object.create(this.__proto__.config)) },
 }
 
 
@@ -2088,8 +2067,7 @@ function Actions(a, b){
 		}
 	})
 
-	return obj
-}
+	return obj }
 
 
 
@@ -2133,8 +2111,7 @@ function(){
 		}
 	})
 
-	return res
-}
+	return res }
 
 
 
