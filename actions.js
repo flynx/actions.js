@@ -766,18 +766,13 @@ object.Constructor('Alias', {
 		var func = function(){
 			// empty alias...
 			if(target == ''){
-				return
-			}
-			var that = this
-			var in_args = [...arguments]
+				return }
 
 			var p = parsed 
 				|| (this.parseStringAction || parseStringAction)(target)
 
-			// XXX should an alias return a value???
-			//p.action in this ?
 			return p.action in this ?
-				(this.parseStringAction || parseStringAction).callAction(this, p, ...in_args)
+				(this.parseStringAction || parseStringAction).callAction(this, p, ...arguments)
 				// error...
 				: console.error(`${alias}: Unknown alias target action: ${p.action}`) }
 		func.toString = function(){ 
