@@ -2,6 +2,8 @@
 * 
 *
 *
+* XXX should this redefine its own mixin functionality or use object.js??
+*
 **********************************************************************/
 ((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)(
 function(require){ var module={} // makes module AMD/node compatible...
@@ -341,9 +343,7 @@ module.UNDEFINED = ASIS(undefined)
 // XXX might be a good idea to add an option to return the full results...
 var Action =
 module.Action = 
-object.Constructor('Action', {
-	__proto__: Function,
-
+object.Constructor('Action', Function, {
 	// Control how an action handles returned promises...
 	// 
 	// Possible values:
@@ -725,9 +725,7 @@ object.Constructor('Action', {
 // XXX should an alias return a value???
 var Alias =
 module.Alias =
-object.Constructor('Alias', {
-	__proto__: Action.prototype,
-
+object.Constructor('Alias', Action, {
 	__new__: function(context, alias, doc, ldoc, attrs, target){
 		// precess args...
 		var args = doc instanceof Array ? 
@@ -776,7 +774,6 @@ object.Constructor('Alias', {
 
 		// make the action...
 		var meth = object.parentCall(Alias.prototype.__new__, this, context, alias, doc, ldoc, attrs, func)
-		//meth.__proto__ = this.__proto__
 
 		meth.func.alias = target
 
@@ -1690,7 +1687,7 @@ module.MetaActions = {
 					// XXX not sure if this is the right way to go...
 					} else if(that[k].source_tag 
 							|| (that[k].func || {}).source_tag){
-						console.warn('Aactions: about to overwrite source tag...\n'
+						console.warn('Actions: about to overwrite source tag...\n'
 							+'  from: "'
 								+(that[k].source_tag 
 									|| (that[k].func || {}).source_tag)+'"\n'
