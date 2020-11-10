@@ -304,7 +304,7 @@ actionSet.on('action_name.pre', function(){
   actions are mainly load-time entities.
 
 
-XXX add doc about the code format...
+<!-- XXX add doc about the code format... -->
 
 
 ### The action system main protocols:
@@ -478,8 +478,6 @@ the second arguments, and as normal a result on the post phase.
 
 
 #### 4. Action attributes
-
-XXX
 
 ```
 <action-set>.getActionAttr('action', 'attr')
@@ -663,7 +661,7 @@ done to prevent actions competing to return a value.
 			
 
 
-XXX need docs on mix(..) and .mix*(..) protocols...
+<!-- XXX need docs on mix(..) and .mix*(..) protocols... -->
 
 
 ## License
