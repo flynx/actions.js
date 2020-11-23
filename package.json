@@ -1,6 +1,6 @@
 {
   "name": "ig-actions",
-  "version": "3.24.12",
+  "version": "3.24.13",
   "description": "",
   "main": "actions.js",
   "scripts": {

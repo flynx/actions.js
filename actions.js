@@ -1237,13 +1237,11 @@ module.MetaActions = {
 	// XXX should we have multiple tags per handler???
 	on: function(actions, b, c){
 		var that = this
-		//var handler = typeof(c) == 'function' ? c : b
-		//var tag = typeof(c) == 'function' ? b : c
 		var _handler = arguments.length == 3 ? c : b
 		var tag = arguments.length == 3 ? b : c
 
 		// alias handler...
-		// cache the parsed handler...
+		// NOTE: we cache the parsed handler...
 		var parsed
 		var handler = typeof(_handler) == 'function' ?
 			_handler
@@ -1261,8 +1259,9 @@ module.MetaActions = {
 					: console.error(
 						`.on(..): Unknown handler target action: ${parsed.action}`) }
 
-		// XXX make this split by whitespace...
-		actions = typeof(actions) == 'string' ? actions.split(/ +/) : actions
+		actions = typeof(actions) == 'string' ? 
+			actions.split(/\s+/) 
+			: actions
 
 		actions.forEach(function(action){
 			// prepare the handler...
