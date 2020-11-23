@@ -447,8 +447,7 @@ object.Constructor('Action', Function, {
 				&& (cur.doc = this.doc)
 			this.long_doc
 				&& (cur.long_doc = this.long_doc)
-			handlers.unshift(cur)
-		}
+			handlers.unshift(cur) }
 
 		// special case: see if we need to handle the call without handlers...
 		var preActionHandler = context.preActionHandler 
@@ -474,9 +473,7 @@ object.Constructor('Action', Function, {
 						if(res 
 								&& res !== context 
 								&& res instanceof Function){
-							a.post = res
-						}
-					}
+							a.post = res } }
 					return a })
 
 			// handlers: pre phase...
@@ -498,17 +495,14 @@ object.Constructor('Action', Function, {
 							// reset the result...
 							// NOTE: this is the only difference between this 
 							// 		and wrapper stages...
-							res = context
-						}
-					}
+							res = context } }
 					return a })
 
 		// XXX EXPERIMENTAL (after calls)...
 		} catch(error){
 			// XXX should we unwind this???
 			delete context.__action_after_running
-			throw error
-		}
+			throw error }
 
 		// return context if nothing specific is returned...
 		res = res === undefined ? context 
@@ -544,8 +538,7 @@ object.Constructor('Action', Function, {
 				.reverse()
 				.forEach(function(a){
 					a.post
-						&& a.post.apply(context, args)
-				})
+						&& a.post.apply(context, args) })
 
 			// wrapper handlers: post phase...
 			data.wrapper && data.wrapper
@@ -553,15 +546,13 @@ object.Constructor('Action', Function, {
 				.reverse()
 				.forEach(function(a){
 					a.post
-						&& a.post.call(context, res, outer, args.slice(1))
-				})
+						&& a.post.call(context, res, outer, args.slice(1)) })
 
 		// XXX EXPERIMENTAL (after calls)...
 		} catch(error){
 			// should we unwind this???
 			delete context.__action_after_running
-			throw error
-		}
+			throw error }
 
 		// handle after calls...
 		// XXX EXPERIMENTAL (after calls)...
@@ -578,9 +569,7 @@ object.Constructor('Action', Function, {
 				delete context.__action_after_running
 			// back to prev level...
 			} else {
-				context.__action_after_running = context.__action_after_running[0]
-			}
-		}
+				context.__action_after_running = context.__action_after_running[0] } }
 
 		return res },
 
@@ -614,9 +603,7 @@ object.Constructor('Action', Function, {
 
 			// push the inner result into the chain...
 			} else if(res !== undefined){
-				data.result = res
-			}
-		}
+				data.result = res } }
 
 		// returned promise -> await for resolve/error...
 		// XXX should we be able to set this in the context???
@@ -628,8 +615,7 @@ object.Constructor('Action', Function, {
 				.then(function(){
 					return that.post(context, data) })
 				.catch(function(){
-					return that.post(context, data) })
-		}
+					return that.post(context, data) }) }
 
 		return this.post(context, data) },
 	chainCall: function(context, inner){
@@ -689,8 +675,7 @@ object.Constructor('Action', Function, {
 		if(func.name == '<action-name>'){
 			Object.defineProperty(func, 'name', {
 				value: name,
-			})
-		}
+			}) }
 
 		// make introspection be a bit better...
 		meth.toString = function(){
@@ -802,19 +787,15 @@ module.MetaActions = {
 			var prop = Object.getOwnPropertyDescriptor(cur, k)
 			while(!prop && cur.__proto__ != null){
 				var cur = cur.__proto__
-				var prop = Object.getOwnPropertyDescriptor(cur, k)
-			}
+				var prop = Object.getOwnPropertyDescriptor(cur, k) }
 			if(prop.get != null){
-				continue
-			}
+				continue }
 			//if(k == 'actions' || k == 'length'){
 			//	continue
 			//}
 			// get only actions...
 			if(this[k] instanceof Action){
-				res.push(k)
-			}
-		}
+				res.push(k) } }
 		return res },
 
 
@@ -877,8 +858,7 @@ module.MetaActions = {
 
 		// set alias...
 		} else {
-			this[alias] = Alias(...arguments)
-		} }),
+			this[alias] = Alias(...arguments) } }),
 
 
 	// Get action attribute...
@@ -931,18 +911,12 @@ module.MetaActions = {
 						this.parseStringAction(cur[action].alias).action, 
 						attr)
 					if(res !== undefined){
-						return res
-					}
-				}
-			}
-			cur = cur.__proto__
-		}
+						return res } } }
+			cur = cur.__proto__ }
 
 		// search .__actioncall__ action...
 		if(cur[action] != null && action != '__actioncall__'){
-			return this.getActionAttr('__actioncall__', attr)
-		}
-	},
+			return this.getActionAttr('__actioncall__', attr) } },
 
 	// Get root action attribute value...
 	//
@@ -957,10 +931,8 @@ module.MetaActions = {
 		// go up the proto chain...
 		while(cur.__proto__ != null){
 			if(cur[action] != null){
-				var target = cur
-			}
-			cur = cur.__proto__
-		}
+				var target = cur }
+			cur = cur.__proto__ }
 
 		// attribute of action...
 		if(target[action][attr] !== undefined){
@@ -969,9 +941,7 @@ module.MetaActions = {
 		// attribute of action function...
 		} else if(target[action].func 
 				&& target[action].func[attr] !== undefined){
-			return target[action].func[attr]
-		}
-	},
+			return target[action].func[attr] } },
 
 	// Get action documentation...
 	//
@@ -1002,11 +972,8 @@ module.MetaActions = {
 			while(cur.__proto__ != null){
 				if(cur[n] != null && cur[n].doc != null){
 					res[n] = [ cur[n].doc, cur[n].long_doc, cur[n].name ]
-					break
-				}
-				cur = cur.__proto__
-			}
-		})
+					break }
+				cur = cur.__proto__ } })
 		return res },
 
 	getPath: function(actions){
@@ -1025,13 +992,10 @@ module.MetaActions = {
 				if(cur[n] != null && cur[n].doc != null){
 					var doc = cur[n].doc
 					var long_doc = cur[n].long_doc
-					break
-				}
-				cur = cur.__proto__
-			}
+					break }
+				cur = cur.__proto__ }
 
-			res[(doc && doc.replace(/[\\\/]$/, '/'+n)) || n] = [n, doc, long_doc]
-		})
+			res[(doc && doc.replace(/[\\\/]$/, '/'+n)) || n] = [n, doc, long_doc] })
 		return res },
 
 
@@ -1074,8 +1038,7 @@ module.MetaActions = {
 			return this.__handler_cache ? 'on' : 'off'
 
 		} else if(to == '??'){
-			return ['on', 'off']
-		}
+			return ['on', 'off'] }
 
 		to = (to === true || to == 'on') ? true
 			: (to === false || to == 'off') ? false
@@ -1089,19 +1052,16 @@ module.MetaActions = {
 				var parent = this.__handler_cache
 				var cache = this.__handler_cache = {}
 				for(var a in parent){
-					cache[a] = parent[a]
-				}
+					cache[a] = parent[a] }
 
 			// local cache only...
 			} else {
-				this.__handler_cache = this.__handler_cache || {}
-			}
+				this.__handler_cache = this.__handler_cache || {} }
 
 		} else {
 			// NOTE: we do not delete here so as to shadow the parent's 
 			// 		cache...
-			this.__handler_cache = false
-		}
+			this.__handler_cache = false }
 
 		// XXX this is not the handler protocol...
 		return this },
@@ -1133,13 +1093,9 @@ module.MetaActions = {
 					var parent = this.__handler_cache
 					var cache = this.__handler_cache = {}
 					for(var a in parent){
-						cache[a] = parent[a]
-					}
-				}
+						cache[a] = parent[a] } }
 
-				delete cache[name]
-			}
-		}
+				delete cache[name] } }
 		return this },
 
 	// Get action handlers from the inheritance chain...
@@ -1157,8 +1113,7 @@ module.MetaActions = {
 		// XXX EXPERIMENTAL (handler cache)...
 		var cache = this.__handler_cache
 		if(cache && cache[name]){
-			return cache[name].slice()
-		}
+			return cache[name].slice() }
 
 		// get the handlers...
 		var handlers = []
@@ -1168,8 +1123,8 @@ module.MetaActions = {
 			if(cur.hasOwnProperty('_action_handlers') 
 					&& name in cur._action_handlers){
 				handlers.splice.apply(handlers,
-						[handlers.length, 0].concat(cur._action_handlers[name]))
-			}
+						[handlers.length, 0]
+							.concat(cur._action_handlers[name])) }
 
 			// get the overloading action...
 			// NOTE: this will get all the handlers including the root 
@@ -1184,18 +1139,14 @@ module.MetaActions = {
 				// function -> terminate chain...
 				} else if(cur[name] instanceof Function){
 					handlers.push(cur[name])
-					break
-				}
-			}
+					break } }
 
-			cur = cur.__proto__
-		}
+			cur = cur.__proto__ }
 
 		// handler cache... 
 		// XXX EXPERIMENTAL (handler cache)...
 		if(cache){
-			cache[name] = handlers
-		}
+			cache[name] = handlers }
 
 		return handlers },
 
@@ -1230,8 +1181,7 @@ module.MetaActions = {
 					res.pre = a
 
 				} else {
-					res.post = a.post_handler
-				}
+					res.post = a.post_handler }
 
 				a.doc
 					&& (res.doc = a.doc)
@@ -1286,13 +1236,34 @@ module.MetaActions = {
 	//
 	// XXX should we have multiple tags per handler???
 	on: function(actions, b, c){
-		var handler = typeof(c) == 'function' ? c : b
-		var tag = typeof(c) == 'function' ? b : c
+		var that = this
+		//var handler = typeof(c) == 'function' ? c : b
+		//var tag = typeof(c) == 'function' ? b : c
+		var _handler = arguments.length == 3 ? c : b
+		var tag = arguments.length == 3 ? b : c
+
+		// alias handler...
+		// cache the parsed handler...
+		var parsed
+		var handler = typeof(_handler) == 'function' ?
+			_handler
+			// alias handler...
+			: function(...args){
+				parsed = parsed 
+					|| (this.parseStringAction 
+						|| parseStringAction)(_handler)
+
+				return parsed.action in this ?
+					(this.parseStringAction 
+							|| parseStringAction)
+						.callAction(this, parsed, ...arguments)
+					// error...
+					: console.error(
+						`.on(..): Unknown handler target action: ${parsed.action}`) }
 
 		// XXX make this split by whitespace...
 		actions = typeof(actions) == 'string' ? actions.split(/ +/) : actions
 
-		var that = this
 		actions.forEach(function(action){
 			// prepare the handler...
 			var mode = action.split('.')
@@ -1318,24 +1289,19 @@ module.MetaActions = {
 			// not pre mode...
 			} else if(mode != 'pre') {
 				// XXX
-				throw 'Unknown action mode: '+action+'.'+mode
-			}
+				throw new Error('Unknown action mode: '+action+'.'+mode) }
 
 			a_handler.event_tag = tag
 
 			// register handlers locally only...
 			if(!that.hasOwnProperty('_action_handlers')){
-				that._action_handlers = {}
-			}
+				that._action_handlers = {} }
 			if(!(action in that._action_handlers)){
-				that._action_handlers[action] = []
-			}
+				that._action_handlers[action] = [] }
 			// register a handler only once...
 			if(that._action_handlers[action].indexOf(a_handler) < 0){
 				// NOTE: last registered is first...
-				that._action_handlers[action].splice(0, 0, a_handler)
-			}
-		})
+				that._action_handlers[action].splice(0, 0, a_handler) } })
 
 		return this },
 
@@ -1383,18 +1349,14 @@ module.MetaActions = {
 						h.forEach(function(e, j){
 							// NOTE: we will only get the first match...
 							if(e.orig_handler === handler && i == -1){
-								i = j
-							}
-						})
+								i = j } })
 
 					} else if(mode == 'pre'){
-						i = h.indexOf(handler)
-					}
+						i = h.indexOf(handler) }
 
 					// NOTE: unknown modes are skipped...
 					if(i >= 0){
-						h.splice(i, 1)
-					}
+						h.splice(i, 1) }
 
 				// remove all handlers...
 				} else if(handler == null || handler == 'all' || handler == '*'){
@@ -1406,10 +1368,7 @@ module.MetaActions = {
 					h.splice.apply(h, 
 							[0, h.length]
 								.concat(h.filter(function(e){ 
-									return e.event_tag != handler })))
-				}
-			})
-		}
+									return e.event_tag != handler }))) } }) }
 
 		return this },
 
@@ -1436,11 +1395,9 @@ module.MetaActions = {
 				that.off(action, handler.orig_handler)
 
 				// call the actual supplied handler function...
-				return handler.orig_handler.apply(this, arguments)
-			}
+				return handler.orig_handler.apply(this, arguments) }
 			handler.orig_handler = _handler
-			that.on(action, tag, handler)
-		})
+			that.on(action, tag, handler) })
 
 		return this },
 
@@ -1463,8 +1420,7 @@ module.MetaActions = {
 		mode = mode || 'top'
 
 		if(!this.__action_after_running){
-			throw new Error('afterAction: no action is running.')
-		}
+			throw new Error('afterAction: no action is running.') }
 
 		;(mode == 'top' ?
 				this.__action_after_running[1]
@@ -1599,8 +1555,7 @@ module.MetaActions = {
 					cur
 				: [cur.__mixin_tag, cur])
 			// go to next item in chain...
-			cur = cur.__proto__
-		}
+			cur = cur.__proto__ }
 		return res },
 	
 	// Get mixin object in inheritance chain...
@@ -1641,11 +1596,9 @@ module.MetaActions = {
 		if(options.all){
 			var keys = []
 			for(var k in from){
-				keys.push(k)
-			}
+				keys.push(k) }
 		} else {
-			var keys = Object.keys(from)
-		}
+			var keys = Object.keys(from) }
 
 		var that = this
 		keys.forEach(function(k){
@@ -1671,8 +1624,7 @@ module.MetaActions = {
 				if(all_attr_types 
 						|| attr instanceof Function
 						|| attr instanceof Action){
-					that[k] = attr
-				}
+					that[k] = attr }
 
 				// source tag actions...
 				// XXX should this set action and method .source_tag or only action???
@@ -1692,16 +1644,11 @@ module.MetaActions = {
 								+(that[k].source_tag 
 									|| (that[k].func || {}).source_tag)+'"\n'
 							+'  to: "'+source_tag+'"\n'
-							+'  on:', that[k])
-					}
+							+'  on:', that[k]) }
 
 					if(that[k].func){
-						that[k].func.source_tag = source_tag
-					}
-					that[k].source_tag = source_tag
-				}
-			}
-		})
+						that[k].func.source_tag = source_tag }
+					that[k].source_tag = source_tag } } })
 
 		return this },
 
@@ -1722,8 +1669,7 @@ module.MetaActions = {
 
 		// add source tag to proto...
 		if(options && options.source_tag){
-			proto.__mixin_tag = options.source_tag
-		}
+			proto.__mixin_tag = options.source_tag }
 
 		this.__proto__ = proto
 
@@ -1764,8 +1710,7 @@ module.MetaActions = {
 				keys.push(k)
 			}
 		} else {
-			var keys = Object.keys(from)
-		}
+			var keys = Object.keys(from) }
 
 		var locals = Object.keys(this)
 		var that = this
@@ -1775,8 +1720,7 @@ module.MetaActions = {
 			// descriptor...
 			if(descriptors && prop.get != null){
 				if(prop.get === Object.getOwnPropertyDescriptor(that, k).get){
-					delete that[k]
-				}
+					delete that[k] }
 
 			// actions and other attrs...
 			} else {
@@ -1784,10 +1728,7 @@ module.MetaActions = {
 				if((all_attr_types || attr instanceof Action) 
 						// remove only local attrs...
 						&& locals.indexOf(k) >= 0){
-					delete that[k]
-				}
-			}
-		})
+					delete that[k] } } })
 
 		return this },
 
@@ -1803,8 +1744,7 @@ module.MetaActions = {
 		if(o != null){
 			target = o.__proto__
 			o.__proto__ = o.__proto__.__proto__
-			this.resetHandlerCache()
-		}
+			this.resetHandlerCache() }
 		return target },
 
 	// Remove a set of local mixed in actions from object...
@@ -1826,9 +1766,7 @@ module.MetaActions = {
 			if(full){
 				o.config = JSON.parse(JSON.stringify(this.config))
 			} else {
-				o.config = Object.create(this.config)
-			}
-		}
+				o.config = Object.create(this.config) } }
 		return o },
 
 	getHandlerSourceTags: function(name){
@@ -1836,8 +1774,7 @@ module.MetaActions = {
 			.map(function(a){
 				return a.pre ? (a.pre.source_tag || a.pre.event_tag)
 					: a.post ? (a.post.source_tag || a.post.event_tag)
-					: null
-			})
+					: null })
 			.unique() },
 
 
@@ -1887,8 +1824,7 @@ module.MetaActions = {
 		var handler = function(p){
 			if(lst.length == 0){
 				//str += p + '---'
-				return
-			}
+				return }
 
 			// indicate root action...
 			p = lst.length == 1 ? p+'| ' : p+' '
@@ -1901,8 +1837,7 @@ module.MetaActions = {
 					+ getDoc(cur, p)
 					// code...
 					+ object.normalizeIndent(cur.pre.toString()).replace(/\n/g, p)
-					+ p
-			}
+					+ p }
 
 			handler(p + '  |')
 
@@ -1913,9 +1848,7 @@ module.MetaActions = {
 					+ getTags(cur.post, p)
 					+ getDoc(cur, p)
 					// code...
-					+ object.normalizeIndent(cur.post.toString()).replace(/\n/g, p)
-			}
-		}
+					+ object.normalizeIndent(cur.post.toString()).replace(/\n/g, p) } }
 
 		handler('\n|')
 
@@ -1942,8 +1875,7 @@ module.MetaActions = {
 						object.normalizeIndent('// Source tag: ' + cur.pre.source_tag) + p : '')
 					// code...
 					+ object.normalizeIndent(cur.pre.toString())
-						.replace(/return/g, '<b>return</b>')))
-			}
+						.replace(/return/g, '<b>return</b>'))) }
 
 			handler(p)
 
@@ -1955,9 +1887,7 @@ module.MetaActions = {
 					+ (cur.post.source_tag ? 
 						object.normalizeIndent('// Source tag: ' + cur.post.source_tag) + p : '')
 					// code...
-					+ object.normalizeIndent(cur.post.toString())))
-			}
-		}
+					+ object.normalizeIndent(cur.post.toString()))) } }
 
 		handler(res)
 
@@ -2038,9 +1968,7 @@ function Actions(a, b){
 
 		// XXX is this the right way to go???
 		if(obj.config != null && proto.config != null){
-			obj.config.__proto__ = proto.config
-		}
-	}
+			obj.config.__proto__ = proto.config } }
 
 	// NOTE: this is intentionally done only for own attributes...
 	Object.keys(obj).forEach(function(k){
@@ -2060,9 +1988,7 @@ function Actions(a, b){
 							|| (obj.isStringAction || isStringAction)(arg[arg.length-1])))) ){
 			obj[k] = arg[arg.length-1] instanceof Function ?
 				(new Action(k, arg))
-				: (new Alias(k, arg))
-		}
-	})
+				: (new Alias(k, arg)) } })
 
 	return obj }
 
@@ -2090,8 +2016,7 @@ function(){
 	// 		object from it...
 	if(args.indexOf(MetaActions) >= 0){
 		args.splice(args.indexOf(MetaActions), 1)
-		res.__proto__ = MetaActions
-	}
+		res.__proto__ = MetaActions }
 
 	var mixin = MetaActions.inlineMixin
 
@@ -2103,10 +2028,8 @@ function(){
 			var config = res.config = res.config || Object.create({})
 
 			Object.keys(p.config).forEach(function(k){
-				res.config.__proto__[k] = JSON.parse(JSON.stringify(p.config[k]))
-			})
-		}
-	})
+				res.config.__proto__[k] = 
+					JSON.parse(JSON.stringify(p.config[k])) }) } })
 
 	return res }
 
@@ -2129,16 +2052,13 @@ function test(){
 			function(){
 				console.log('  test 1!')
 				return function(){
-					console.log('  test 2!')
-				}
-			}],
+					console.log('  test 2!') } }],
 
 		testActionGen2: ['baisc 2\'nd gen test action...',
 			// no extra info...
 			function(){
 				console.log('  test gen 2!')
-				this.testActionGen1()
-			}],
+				this.testActionGen1() }],
 	})
 
 	var TestActions2 = 
@@ -2151,14 +2071,11 @@ function test(){
 			function(){
 				console.log('  pre callback!')
 				return function(){
-					console.log('  post callback!')
-				}
-			}],
+					console.log('  post callback!') } }],
 
 		testAction2: ['this is an action',
 			function(){
-				console.log('testAction2 args:', arguments)
-			}],
+				console.log('testAction2 args:', arguments) }],
 
 	})
 
