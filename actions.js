@@ -73,6 +73,7 @@ function(func){
 //		}
 // 		
 //
+// NOTE: both actionName and IDENTIFIER can contain '.' delimiting paths...
 // NOTE: identifiers are resolved as attributes of the context...
 // NOTE: this is a stateless object...
 // XXX this is the same as ImageGrid's keyboard.parseActionCall(..), reuse	
@@ -118,7 +119,7 @@ Object.assign(
 					'\\d+\\.\\d+|\\d+',
 
 					// identifiers...
-					'[a-zA-Z$@#_][a-zA-Z0-9$@#_]*',
+					'[a-zA-Z$@#_][a-zA-Z0-9$@#_\\.]*',
 
 					// rest args...
 					'\\.\\.\\.',
@@ -135,7 +136,7 @@ Object.assign(
 						new parseStringAction.Argument(e.slice(1))
 					// idetifiers...
 					// NOTE: keep this last as it is the most general...
-					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_]*$/.test(e) ?
+					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_\.]*$/.test(e) ?
 						new parseStringAction.Identifier(e)
 					: JSON.parse(e) })
 
@@ -165,6 +166,7 @@ Object.assign(
 		ALLARGS: new __Argument('...'),
 
 		// general API...
+		// XXX should this use .resolvePath(..) to get args???
 		resolveArgs: function(context, action_args, call_args){
 			var that = this
 			var rest
@@ -180,13 +182,14 @@ Object.assign(
 							: call_args[parseInt(arg.value)])
 						// resolve idents...
 						: arg instanceof that.Identifier ?
-							context[arg.value]
+							that.resolvePathValue(context, arg.value)
+							//context[arg.value]
 						: arg })
 			rest != null
 				&& args.splice(rest, 1, ...call_args)
 			return args },
-		resolveAction: function(context, name){
-			var path = name.split(/\./g)
+		resolvePath: function(context, path){
+			var path = path.split(/\./g)
 			return {
 				name: path.pop(),
 				context: path
@@ -196,8 +199,11 @@ Object.assign(
 							: res
 					}, context),
 			} },
-		isActionReachable: function(context, name){
-			var {context, name} = this.resolveAction(context, name) 
+		resolvePathValue: function(context, path){
+			var {context, name} = this.resolvePath(...arguments)
+			return context[name] },
+		isPathReachable: function(context, path){
+			var {context, name} = this.resolvePath(context, path) 
 			return context 
 				&& name in context },
 		// XXX should this break if action does not exist???
@@ -205,8 +211,9 @@ Object.assign(
 			action = typeof(action) == typeof('str') ? 
 				this(action) 
 				: action
+			// NOTE: we use the root context to resolve the args...
 			var root = context
-			var {context, name} = this.resolveAction(context, action.action)
+			var {context, name} = this.resolvePath(context, action.action)
 			return (context && context[name] instanceof Function) ? 
 				context[name](...this.resolveArgs(root, action.arguments, args))
 				// action not found or is not callable...
@@ -765,7 +772,7 @@ object.Constructor('Alias', Action, {
 			var p = parsed 
 				|| parser(target)
 
-			return parser.isActionReachable(this, p.action) ?
+			return parser.isPathReachable(this, p.action) ?
 				parser.callAction(this, p, ...arguments)
 				// error...
 				: console.error(`${alias}: Unknown alias target action: ${p.action}`) }
@@ -1264,7 +1271,7 @@ module.MetaActions = {
 			: function(...args){
 				var parser = this.parseStringAction || parseStringAction
 				parsed = parsed || parser(_handler)
-				return parser.isActionReachable(this, parsed.action) ?
+				return parser.isPathReachable(this, parsed.action) ?
 					parser.callAction(this, parsed, ...arguments)
 					// error...
 					: console.error(
