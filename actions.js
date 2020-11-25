@@ -119,7 +119,7 @@ Object.assign(
 					'\\d+\\.\\d+|\\d+',
 
 					// identifiers...
-					'[a-zA-Z$@#_][a-zA-Z0-9$@#_\\.]*',
+					'[a-zA-Z$@#_][a-zA-Z0-9$@#_-\\.]*',
 
 					// rest args...
 					'\\.\\.\\.',
@@ -136,7 +136,7 @@ Object.assign(
 						new parseStringAction.Argument(e.slice(1))
 					// idetifiers...
 					// NOTE: keep this last as it is the most general...
-					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_\.]*$/.test(e) ?
+					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_-\.]*$/.test(e) ?
 						new parseStringAction.Identifier(e)
 					: JSON.parse(e) })
 
