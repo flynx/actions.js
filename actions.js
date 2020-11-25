@@ -185,21 +185,32 @@ Object.assign(
 			rest != null
 				&& args.splice(rest, 1, ...call_args)
 			return args },
-
+		resolveAction: function(context, name){
+			var path = name.split(/\./g)
+			return {
+				name: path.pop(),
+				context: path
+					.reduce(function(res, n){
+						return res != null ?
+							res[n]
+							: res
+					}, context),
+			} },
+		isActionReachable: function(context, name){
+			var {context, name} = this.resolveAction(context, name) 
+			return context 
+				&& name in context },
 		// XXX should this break if action does not exist???
 		callAction: function(context, action, ...args){
 			action = typeof(action) == typeof('str') ? 
 				this(action) 
 				: action
-			// XXX should this break if action does not exist???
-			return context[action.action] instanceof Function ? 
-				context[action.action]
-					.apply(context, this.resolveArgs(context, action.arguments, args))
-				// action not found or is not callable... (XXX)
+			var {context, name} = this.resolveAction(context, action.action)
+			return (context && context[name] instanceof Function) ? 
+				context[name](context, ...this.resolveArgs(context, action.arguments, args))
+				// action not found or is not callable...
+				// XXX should this break if action does not exist???
 				: undefined },
-		applyAction: function(context, action, args){
-			return this.callAction(context, action, ...args) },
-
 		// XXX make this stricter...
 		isStringAction: function(txt){
 			try{
@@ -747,11 +758,14 @@ object.Constructor('Alias', Action, {
 			if(target == ''){
 				return }
 
+			var parser = 
+				this.parseStringAction
+					|| parseStringAction
 			var p = parsed 
-				|| (this.parseStringAction || parseStringAction)(target)
+				|| parser(target)
 
-			return p.action in this ?
-				(this.parseStringAction || parseStringAction).callAction(this, p, ...arguments)
+			return parser.isActionReachable(this, p.action) ?
+				parser.callAction(this, p, ...arguments)
 				// error...
 				: console.error(`${alias}: Unknown alias target action: ${p.action}`) }
 		func.toString = function(){ 
@@ -822,7 +836,7 @@ module.MetaActions = {
 				action.apply(this, args)
 			: this[action] ?
 				this[action].apply(this, args)
-			: this.parseStringAction.applyAction(this, action, args) },
+			: this.parseStringAction.callAction(this, action, ...args) },
 	apply: function(action, args){
 		return this.call(action, ...args)},
 
@@ -1247,18 +1261,15 @@ module.MetaActions = {
 			_handler
 			// alias handler...
 			: function(...args){
-				parsed = parsed 
-					|| (this.parseStringAction 
-						|| parseStringAction)(_handler)
-
-				return parsed.action in this ?
-					(this.parseStringAction 
-							|| parseStringAction)
-						.callAction(this, parsed, ...arguments)
+				var parser = this.parseStringAction || parseStringAction
+				parsed = parsed || parser(_handler)
+				return parser.isActionReachable(this, parsed.action) ?
+					parser.callAction(this, parsed, ...arguments)
 					// error...
 					: console.error(
 						`.on(..): Unknown handler target action: ${parsed.action}`) }
 
+		// actions as a string/array...
 		actions = typeof(actions) == 'string' ? 
 			actions.split(/\s+/) 
 			: actions
