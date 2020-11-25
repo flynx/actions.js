@@ -205,9 +205,10 @@ Object.assign(
 			action = typeof(action) == typeof('str') ? 
 				this(action) 
 				: action
+			var root = context
 			var {context, name} = this.resolveAction(context, action.action)
 			return (context && context[name] instanceof Function) ? 
-				context[name](context, ...this.resolveArgs(context, action.arguments, args))
+				context[name](...this.resolveArgs(root, action.arguments, args))
 				// action not found or is not callable...
 				// XXX should this break if action does not exist???
 				: undefined },
