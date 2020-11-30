@@ -26,6 +26,8 @@ var object = require('ig-object')
 //		-> func
 //
 //
+// XXX is this a good idea to combine a documenter and doc formatter???
+// 		...can't think of a good enough set of names to separate them...
 var doc =
 module.doc =
 function(doc, action){
