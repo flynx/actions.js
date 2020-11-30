@@ -16,6 +16,34 @@ var object = require('ig-object')
 /*********************************************************************/
 // helpers...
 
+
+// Document function...
+//
+//	doc(doc, func)
+//		-> func
+//
+//	doc(doc, long_doc, func)
+//		-> func
+//
+//
+var doc =
+module.doc =
+function(doc, action){
+	// template string processor...
+	if(doc instanceof Array){
+		return object.doc(...arguments) }
+	// document function...
+	var args = [...arguments]
+	action = args.pop()
+	var [doc, long_doc] = args
+	return object.mixinFlat(
+		action,
+		{
+			doc,
+			long_doc,
+		}) }
+
+
 // XXX doc...
 var doWithRootAction = 
 module.doWithRootAction = 
