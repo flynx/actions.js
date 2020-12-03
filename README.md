@@ -158,6 +158,29 @@ n
   languages such as Python where the order is reversed.
 
 
+## Index
+- [Actions](#actions)
+      - [The problem:](#the-problem)
+      - [The solution:](#the-solution)
+    - [What we get:](#what-we-get)
+    - [Restrictions comparing to native JavaScript:](#restrictions-comparing-to-native-javascript)
+  - [Index](#index)
+    - [The main entities:](#the-main-entities)
+    - [The action system main protocols:](#the-action-system-main-protocols)
+      - [1. Documentation generation and introspection (`MetaActions`)](#1-documentation-generation-and-introspection-metaactions)
+      - [2. Event-like callbacks for actions (`MetaActions`, `Action`)](#2-event-like-callbacks-for-actions-metaactions-action)
+      - [3. A mechanism to define and extend already defined actions](#3-a-mechanism-to-define-and-extend-already-defined-actions)
+    - [Secondary action protocols:](#secondary-action-protocols)
+      - [1. A mechanism to manually call the pre/post stages of an action](#1-a-mechanism-to-manually-call-the-prepost-stages-of-an-action)
+      - [2. A mechanism to chain/wrap actions or an action and a function.](#2-a-mechanism-to-chainwrap-actions-or-an-action-and-a-function)
+      - [3. `.__actioncall__` action / handler](#3-__actioncall__-action--handler)
+      - [4. Action attributes](#4-action-attributes)
+      - [5. Pre-call testing if an action can be called](#5-pre-call-testing-if-an-action-can-be-called)
+      - [6. Scheduling a call after the running action](#6-scheduling-a-call-after-the-running-action)
+      - [7. Calling action handlers sorted independently of the prototype chain](#7-calling-action-handlers-sorted-independently-of-the-prototype-chain)
+    - [Alias protocols:](#alias-protocols)
+  - [License](#license)
+
 
 ### The main entities:
 
@@ -479,6 +502,17 @@ the second arguments, and as normal a result on the post phase.
 
 #### 4. Action attributes
 
+Setting action attributes:
+```javascript
+    someAction: [
+        {attr: 'value', .. },
+        function(){
+            ...
+        }],
+
+```
+
+Attribute access:
 ```
 <action-set>.getActionAttr('action', 'attr')
     -> <value>
@@ -487,7 +521,35 @@ the second arguments, and as normal a result on the post phase.
     -> <value>
 ```
 
-#### 5. Scheduling a call after the running action
+
+#### 5. Pre-call testing if an action can be called
+
+A pre call test is called before the action's pre handlers are called and if 
+it returns anything truthy the action is not called and that return value is 
+returned instead.
+
+To return a falsey value wrap it in `actions.ASIS(..)`
+
+Only the top-most pre call test is called.
+
+Defining a pre call test:
+```javascript
+    someAction: [
+        {precall: actions.debounce(200, true)},
+        function(){
+            ...
+        }],
+```
+
+The test is called in the context of the `<action-set>`
+```
+<pre-call-test>(<action>, ...)
+    -> undefined
+    -> <value>
+```
+
+
+#### 6. Scheduling a call after the running action
 
 This enables the action code to schedule a call after the current 
 action level or the root action is done.
@@ -520,7 +582,7 @@ Example:
 - This is pointless outside of an action call, thus an exception will be thrown.
 
 
-#### 6. Calling action handlers sorted independently of the prototype chain
+#### 7. Calling action handlers sorted independently of the prototype chain
 
 This sorts action handlers by priority `.sortedActionPriority` then 
 order and calls them.

@@ -58,6 +58,46 @@ function(func){
 		return func.apply(this, [handlers.pop()].concat(args)) } }
 
 
+//---------------------------------------------------------------------
+// pre-call tests...
+
+// Debounce action call...
+//
+// 	debounce()
+// 	debounce(timeout[, postcall])
+// 		-> this
+// 		-> false
+//
+//
+// XXX would be good to add a version of this that would debounce taking 
+// 		into acoount args...
+// XXX EXPERIMENTAL (precall)...
+var debounce =
+module.debounce =
+function(timeout=200, postcall=true){
+	var debounced = false
+	var last_args
+
+	return function(action, ...args){
+		// call...
+		if(!debounced){
+			debounced = setTimeout(
+				function(){
+					debounced = false
+					// post call...
+					postcall
+						&& last_args !== undefined
+						&& action.call(this, ...last_args) }.bind(this), 
+				timeout)
+			// cleanup...
+			last_args = undefined
+			return false
+		// skip...
+		} else {
+			last_args = args
+			return this } } }
+
+
 
 //---------------------------------------------------------------------
 // String action parser/runner...
@@ -483,6 +523,29 @@ object.Constructor('Action', Function, {
 			|| MetaActions.getHandlers
 		var handlers = getHandlers.call(context, outer)
 
+		// precall test...
+		// NOTE: we are calling only the top-most precall method, the 
+		// 		rest are ignored...
+		// XXX EXPERIMENTAL (precall)...
+		var precall = handlers
+			.map(function(h){ 
+				return (h.pre || {}).precall ? 
+					[h.pre.precall] 
+					: [] })
+			.flat()
+			.pop()
+		if(typeof(precall) == 'function'){
+			// XXX revise args...
+			precall = precall.call(context, this, ...args)
+			if(precall){
+				return {
+					rejected: true,
+					// XXX revise how default value is returned...
+					result: precall instanceof ASIS ? 
+						precall.value
+						: precall,
+				} } }
+
 		// handle cases where .func is not in handlers...
 		//
 		// NOTE: see Special cases in method doc above...
@@ -554,13 +617,10 @@ object.Constructor('Action', Function, {
 			throw error }
 
 		// return context if nothing specific is returned...
-		res = res === undefined ? context 
-			: res instanceof ASIS ? res.value
-			// XXX returning an explicit [undefined]...
-			//: res instanceof Array
-			//		&& res.length == 1
-			//		&& res.indexOf(undefined) == 0 ?
-			//	undefined
+		res = res === undefined ? 
+				context 
+			: res instanceof ASIS ? 
+				res.value
 			: res
 
 		return {
@@ -626,11 +686,16 @@ object.Constructor('Action', Function, {
 	// chaining...
 	// 
 	// For docs see: MetaActions.chainApply(..) and the base module doc.
-	chainApply: function(context, inner, args){
-		args = [...(args || [])]
+	chainCall: function(context, inner, ...args){
+		args = args || []
 		var outer = this.name
 
 		var data = this.pre(context, args)
+
+		// precall test...
+		// XXX EXPERIMENTAL (precall)...
+		if(data.rejected == true){
+			return data.result }
 
 		// call the inner action/function if preset....
 		// NOTE: this is slightly different (see docs) to what happens in 
@@ -640,9 +705,9 @@ object.Constructor('Action', Function, {
 			var res = inner instanceof Function ? 
 					inner.apply(context, args)
 				: inner instanceof Array && inner.length > 0 ? 
-					context[inner.pop()].chainApply(context, inner, args)
+					context[inner.pop()].chainCall(context, inner, ...args)
 				: typeof(inner) == typeof('str') ?
-					context[inner].chainApply(context, null, args)
+					context[inner].chainCall(context, null, ...args)
 				: undefined
 
 			// call the resulting function...
@@ -667,8 +732,8 @@ object.Constructor('Action', Function, {
 					return that.post(context, data) }) }
 
 		return this.post(context, data) },
-	chainCall: function(context, inner){
-		return this.chainApply(context, inner, [...arguments].slice(2)) },
+	chainApply: function(context, inner, args){
+		return this.chainCall(context, inner, ...args) },
 
 
 	// constructor...
@@ -686,7 +751,7 @@ object.Constructor('Action', Function, {
 
 		// create the actual instance we will be returning...
 		var meth = function(){
-			return meth.chainApply(this, null, arguments) }
+			return meth.chainCall(this, null, ...arguments) }
 		meth.__proto__ = this.__proto__
 
 		// precess args...
@@ -1481,14 +1546,13 @@ module.MetaActions = {
 
 	// Apply/call a function/action "inside" an action...
 	//
-	// 	.chainApply(outer, inner)
-	// 	.chainApply(outer, inner, arguments)
-	// 		-> result
-	//
 	// 	.chainCall(outer, inner)
 	// 	.chainCall(outer, inner, ..)
 	// 		-> result
 	//
+	// 	.chainApply(outer, inner)
+	// 	.chainApply(outer, inner, arguments)
+	// 		-> result
 	//
 	// The inner action call is completely nested as base of the outer 
 	// action.
@@ -1514,10 +1578,10 @@ module.MetaActions = {
 	// NOTE: these call the action's .chainApply(..) and .chainCall(..)
 	// 		methods, thus is not compatible with non-action methods...
 	// NOTE: .chainCall('action', ..) is equivalent to .action.chainCall(..)
-	chainApply: function(outer, inner, args){
-		return this[outer].chainApply(this, inner, args) },
-	chainCall: function(outer, inner){
-		return this[outer].chainApply(this, inner, [...arguments].slice(2)) },
+	chainCall: function(outer, inner, ...args){
+		return this[outer].chainCall(this, inner, ...args) },
+	chainApply: function(outer, inner, ...args){
+		return this[outer].chainCall(this, inner, args) },
 
 
 	// Call action handlers serted by .sortedActionPriority...
