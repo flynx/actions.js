@@ -394,9 +394,9 @@ module.UNDEFINED = ASIS(undefined)
 // 		XXX is this correct??
 // NOTE: by default an action will return 'this', i.e. the action set
 // 		object the action was called from.
-// NOTE: if func.nmae is set to '<action-name>' it will be reset to the 
-// 		action name by Action(..). This is a means for extending functions 
-// 		to get the specific action name.
+// NOTE: if func.nmae is set to '<action-name>' or it is '' (anonymous 
+// 		function) it will be reset to the action name by Action(..). This 
+// 		is a means for extending functions to get the specific action name.
 // 		Example:
 // 			var getActionName = function(func){
 // 				var f = function(...args){
@@ -786,10 +786,8 @@ object.Constructor('Action', Function, {
 
 		meth.func = func
 
-		if(func.name == '<action-name>'){
-			Object.defineProperty(func, 'name', {
-				value: name,
-			}) }
+		;(func.name == '' || func.name == '<action-name>')
+			&& Object.defineProperty(func, 'name', { value: name })
 
 		// make introspection be a bit better...
 		meth.toString = function(){
