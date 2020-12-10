@@ -1007,6 +1007,9 @@ module.MetaActions = {
 	// XXX add option to to enable/disable look in .__actioncall__... 
 	getActionAttr: function(action, attr){
 		var cur = this
+		action = typeof(action) == 'function' ?
+			action.name
+			: action
 
 		// go up the proto chain...
 		while(cur.__proto__ != null){
@@ -1042,6 +1045,9 @@ module.MetaActions = {
 	// 		base Action object is checked (Action.prototype.await)...
 	getRootActionAttr: function(action, attr){
 		var cur = this
+		action = typeof(action) == 'function' ?
+			action.name
+			: action
 
 		// go up the proto chain...
 		while(cur.__proto__ != null){
@@ -1074,14 +1080,21 @@ module.MetaActions = {
 	getDoc: function(actions){
 		var res = {}
 		var that = this
-		actions = actions == null ? this.actions
-			: arguments.length > 1 ? [...arguments]
-			: typeof(actions) == typeof('str') ? [actions]
+		actions = actions == null ? 
+				this.actions
+			: arguments.length > 1 ? 
+				[...arguments]
+			: (typeof(actions) == typeof('str') 
+					|| typeof(actions) == 'function') ? 
+				[actions]
 			: actions
 
 		// get the first defined set of docs in the inheritance chain...
 		actions.forEach(function(n){
 			var cur = that
+			n = typeof(n) == 'function' ?
+				n.name
+				: n
 			res[n] = []
 			// go up the proto chain...
 			while(cur.__proto__ != null){
@@ -1094,14 +1107,21 @@ module.MetaActions = {
 	getPath: function(actions){
 		var res = {}
 		var that = this
-		actions = actions == null ? this.actions
-			: arguments.length > 1 ? [...arguments]
-			: typeof(actions) == typeof('str') ? [actions]
+		actions = actions == null ? 
+				this.actions
+			: arguments.length > 1 ? 
+				[...arguments]
+			: (typeof(actions) == typeof('str') 
+					|| typeof(actions) == 'function') ? 
+				[actions]
 			: actions
 
 		// get the first defined set of docs in the inheritance chain...
 		actions.forEach(function(n){
 			var cur = that
+			n = typeof(n) == 'function' ?
+				n.name
+				: n
 			// go up the proto chain...
 			while(cur.__proto__ != null){
 				if(cur[n] != null && cur[n].doc != null){
