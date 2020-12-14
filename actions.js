@@ -831,7 +831,7 @@ object.Constructor('Alias', Action, {
 				.slice(2)
 				.filter(function(e){ return e !== undefined })
 		target = args.pop()
-		last = args[args.length-1]
+		var last = args[args.length-1]
 		attrs = (last != null && typeof(last) != typeof('str')) ? 
 			args.pop() 
 			: {}
