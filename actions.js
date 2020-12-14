@@ -5,8 +5,8 @@
 * XXX should this redefine its own mixin functionality or use object.js??
 *
 **********************************************************************/
-((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)(
-function(require){ var module={} // makes module AMD/node compatible...
+((typeof define)[0]=='u'?function(f){module.exports=f(require)}:define)
+(function(require){var module={} // makes module AMD/node compatible...
 /*********************************************************************/
 
 var object = require('ig-object')
@@ -761,7 +761,7 @@ object.Constructor('Action', Function, {
 				.slice(2)
 				.filter(function(e){ return e !== undefined })
 		func = args.pop()
-		last = args[args.length-1]
+		var last = args[args.length-1]
 		attrs = (last != null && typeof(last) != typeof('str')) ? 
 			args.pop() 
 			: {}
