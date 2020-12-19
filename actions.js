@@ -1252,14 +1252,13 @@ module.MetaActions = {
 
 		// get the handlers...
 		var handlers = []
+		var actions = []
 		var cur = this
-		while(cur.__proto__ != null){
+		while(cur != null){
 			// get action "event" handlers...
 			if(cur.hasOwnProperty('__action_handlers') 
 					&& name in cur.__action_handlers){
-				handlers.splice.apply(handlers,
-						[handlers.length, 0]
-							.concat(cur.__action_handlers[name])) }
+				handlers.push(cur.__action_handlers[name]) }
 
 			// get the overloading action...
 			// NOTE: this will get all the handlers including the root 
@@ -1269,14 +1268,20 @@ module.MetaActions = {
 			if(cur.hasOwnProperty(name)){
 				// action -> collect...
 				if(cur[name] instanceof Action){
-					handlers.push(cur[name].func)
+					actions.push(cur[name].func)
 
 				// function -> terminate chain...
 				} else if(cur[name] instanceof Function){
-					handlers.push(cur[name])
+					actions.push(cur[name])
 					break } }
 
 			cur = cur.__proto__ }
+
+		// NOTE: we call all the handlers before the actions... (???)
+		handlers = [
+			...handlers.flat(), 
+			...actions,
+		]
 
 		// handler cache... 
 		// XXX EXPERIMENTAL (handler cache)...
@@ -1370,7 +1375,7 @@ module.MetaActions = {
 	// NOTE: 'post' mode is the default.
 	//
 	// XXX should we have multiple tags per handler???
-	__action_handlers: null,
+	//__action_handlers: null,
 	on: function(actions, b, c){
 		var that = this
 		var _handler = arguments.length == 3 ? c : b
@@ -1712,13 +1717,14 @@ module.MetaActions = {
 	// 		otherwise only mixin local actions...
 	// NOTE: this will override existing own attributes.
 	//
+	// XXX should this also mixin .__action_handlers???
 	// XXX should we include functions by default????
 	// XXX should .source_tag be set here or in Actions(..)???
 	inlineMixin: function(from, options){
 		// defaults...
 		options = options || {}
-		var descriptors = options.descriptors || true
-		var all_attr_types = options.all_attr_types || false
+		var descriptors = options.descriptors == null ? true : false
+		var all_attr_types = options.all_attr_types == null ? false : true
 		var source_tag = options.source_tag
 
 		resetHandlerCache = (this.resetHandlerCache || MetaActions.resetHandlerCache)
@@ -1891,7 +1897,7 @@ module.MetaActions = {
 	//
 	// XXX is this correct???
 	// XXX should this be an action???
-	// XXX should this handle .__action_handlers ???
+	// XXX should this handle .__handler_cache ???
 	clone: function(full){
 		var o = Object.create(this)
 		if(this.config){
