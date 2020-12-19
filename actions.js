@@ -1255,11 +1255,11 @@ module.MetaActions = {
 		var cur = this
 		while(cur.__proto__ != null){
 			// get action "event" handlers...
-			if(cur.hasOwnProperty('_action_handlers') 
-					&& name in cur._action_handlers){
+			if(cur.hasOwnProperty('__action_handlers') 
+					&& name in cur.__action_handlers){
 				handlers.splice.apply(handlers,
 						[handlers.length, 0]
-							.concat(cur._action_handlers[name])) }
+							.concat(cur.__action_handlers[name])) }
 
 			// get the overloading action...
 			// NOTE: this will get all the handlers including the root 
@@ -1370,6 +1370,7 @@ module.MetaActions = {
 	// NOTE: 'post' mode is the default.
 	//
 	// XXX should we have multiple tags per handler???
+	__action_handlers: null,
 	on: function(actions, b, c){
 		var that = this
 		var _handler = arguments.length == 3 ? c : b
@@ -1425,14 +1426,14 @@ module.MetaActions = {
 			a_handler.event_tag = tag
 
 			// register handlers locally only...
-			if(!that.hasOwnProperty('_action_handlers')){
-				that._action_handlers = {} }
-			if(!(action in that._action_handlers)){
-				that._action_handlers[action] = [] }
+			if(!that.hasOwnProperty('__action_handlers')){
+				that.__action_handlers = {} }
+			if(!(action in that.__action_handlers)){
+				that.__action_handlers[action] = [] }
 			// register a handler only once...
-			if(that._action_handlers[action].indexOf(a_handler) < 0){
+			if(that.__action_handlers[action].indexOf(a_handler) < 0){
 				// NOTE: last registered is first...
-				that._action_handlers[action].splice(0, 0, a_handler) } })
+				that.__action_handlers[action].splice(0, 0, a_handler) } })
 
 		return this },
 
@@ -1455,9 +1456,9 @@ module.MetaActions = {
 	// NOTE: the handler passed to .off(..) for removal must be the same
 	// 		as the handler passed to .on(..) / .one(..)
 	off: function(actions, handler){
-		if(this.hasOwnProperty('_action_handlers')){
+		if(this.hasOwnProperty('__action_handlers')){
 
-			actions = actions == '*' ? Object.keys(this._action_handlers)
+			actions = actions == '*' ? Object.keys(this.__action_handlers)
 				: typeof(actions) == 'string' ?  actions.split(' ')
 				: actions
 
@@ -1470,7 +1471,7 @@ module.MetaActions = {
 				that.resetHandlerCache(action)
 
 				// get the handlers...
-				var h = that._action_handlers[action] || []
+				var h = that.__action_handlers[action] || []
 
 				// remove explicit handler...
 				if(typeof(handler) == 'function'){
@@ -1890,6 +1891,7 @@ module.MetaActions = {
 	//
 	// XXX is this correct???
 	// XXX should this be an action???
+	// XXX should this handle .__action_handlers ???
 	clone: function(full){
 		var o = Object.create(this)
 		if(this.config){
