@@ -1724,7 +1724,8 @@ module.MetaActions = {
 		// defaults...
 		options = options || {}
 		var descriptors = options.descriptors == null ? true : false
-		var all_attr_types = options.all_attr_types == null ? false : true
+		var all_attr_types = !!options.all_attr_types
+		var action_handlers = !!options.action_handlers
 		var source_tag = options.source_tag
 
 		resetHandlerCache = (this.resetHandlerCache || MetaActions.resetHandlerCache)
@@ -1762,6 +1763,13 @@ module.MetaActions = {
 						|| attr instanceof Function
 						|| attr instanceof Action){
 					that[k] = attr }
+
+				// copy the action handlers...
+				if(action_handlers && k == '__action_handlers' && attr){
+					var h = that[k] = {}
+					Object.entries(attr)
+						.forEach(function([k, v]){
+							h[k] = v.slice() }) }
 
 				// source tag actions...
 				// XXX should this set action and method .source_tag or only action???
@@ -1833,6 +1841,8 @@ module.MetaActions = {
 	// 		not be affected...
 	// NOTE: this will not affect event handlers, they should be removed
 	// 		manually if needed...
+	//
+	// XXX do .__action_handlers???
 	inlineMixout: function(from, options){
 		// defaults...
 		options = options || {}
