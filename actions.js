@@ -934,12 +934,20 @@ module.MetaActions = {
 	// XXX EXPERIMENTAL...
 	call: function(action, ...args){
 		return action instanceof Function ?
-				action.apply(this, args)
+				action.call(this, ...args)
 			: this[action] ?
-				this[action].apply(this, args)
+				this[action](...args)
 			: this.parseStringAction.callAction(this, action, ...args) },
-	apply: function(action, args){
-		return this.call(action, ...args)},
+	// XXX EXPERIMENTAL -- symantics of this are not final...
+	chain: function(actions, ...args){
+		var that = this
+		actions
+			.reduce(function(res, action){
+				return res instanceof Promise ?
+					res
+						.then(function(res){ 
+							return that.call(action, res, ...args) })
+					: that.call(action, res, ...args) }, that) },
 
 
 	// Set/remove action alias...
