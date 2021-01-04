@@ -208,6 +208,7 @@ Object.assign(
 					// NOTE: keep this last as it is the most general...
 					: /^[a-zA-Z$@#_][a-zA-Z0-9$@#_\-\.]*$/.test(e) ?
 						new parseStringAction.Identifier(e)
+					// other values...
 					: JSON.parse(e) })
 
 		return {
@@ -939,6 +940,7 @@ module.MetaActions = {
 				this[action](...args)
 			: this.parseStringAction.callAction(this, action, ...args) },
 	// XXX EXPERIMENTAL -- symantics of this are not final...
+	// XXX need str syntax for this...
 	chain: function(actions, ...args){
 		var that = this
 		actions
