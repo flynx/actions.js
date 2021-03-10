@@ -941,9 +941,11 @@ module.MetaActions = {
 			: this.parseStringAction.callAction(this, action, ...args) },
 	// XXX EXPERIMENTAL -- symantics of this are not final...
 	// XXX need str syntax for this...
+	// XXX need to be able to both chain and parallel actions, a-la 
+	// 		Promise.all(..)...
 	chain: function(actions, ...args){
 		var that = this
-		actions
+		return actions
 			.reduce(function(res, action){
 				return res instanceof Promise ?
 					res
