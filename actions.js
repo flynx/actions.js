@@ -1048,6 +1048,29 @@ module.MetaActions = {
 		if(cur[action] != null && action != '__actioncall__'){
 			return this.getActionAttr('__actioncall__', attr) } },
 
+	// Get action attribute with alias support...
+	//
+	// An aliased attribute is one containing a string name of another 
+	// action.
+	//
+	// To avoid things changing when actions are added/removed this does 
+	// not support string attrubute values.
+	getActionAttrAliased: function(action, attr){
+		var value = action
+		var seen = new Set()
+		do {
+			// recursive alias...
+			if(seen.has(value)){
+				throw new Error(
+					'getActionAttrAliased: recursive alias for "'+ attr +'": '
+					// XXX should we split seen at value???
+					+ [...seen, value].join(' -> ')) }
+			seen.add(value)
+			// next value...
+			value = this.getActionAttr(value, attr)
+		} while(typeof(value) == 'string')
+		return value },
+
 	// Get root action attribute value...
 	//
 	// This is similar to .getActionAttr(..) but will only chenck the 

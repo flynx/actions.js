@@ -517,6 +517,9 @@ Attribute access:
 <action-set>.getActionAttr('action', 'attr')
     -> <value>
 
+<action-set>.getActionAttrAliased('action', 'attr')
+    -> <value>
+
 <action-set>.getRootActionAttr('action', 'attr')
     -> <value>
 ```
