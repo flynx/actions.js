@@ -1,6 +1,6 @@
 {
   "name": "ig-actions",
-  "version": "3.25.0",
+  "version": "3.26.0",
   "description": "",
   "main": "actions.js",
   "scripts": {
@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/flynx/actions.js#readme",
   "dependencies": {
-    "ig-object": "^5.4.16"
+    "ig-object": "*"
   }
 }
