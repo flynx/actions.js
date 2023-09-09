@@ -733,7 +733,7 @@ done to prevent actions competing to return a value.
 
 [BSD 3-Clause License](./LICENSE)
 
-Copyright (c) 2018, Alex A. Naanou,
+Copyright (c) 2018-2023, Alex A. Naanou,
 All rights reserved.
 
 <!-- vim:set ts=4 sw=4 spell : -->
